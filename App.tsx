@@ -286,7 +286,7 @@ const App: React.FC = () => {
             <MarketIntelligence corporates={topCorporates} travelAgents={topTravelAgents} />
           </div>
 
-          <div className="break-inside-avoid mt-20">
+          <div className="mt-20">
             <RoomTypeAudit rooms={roomTypes} />
           </div>
 
@@ -404,6 +404,7 @@ const App: React.FC = () => {
         .pdf-generation-mode .md\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
         .pdf-generation-mode .lg\\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
         .pdf-generation-mode .lg\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+        .pdf-generation-mode .room-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 20px !important; }
 
         .pdf-generation-mode .break-inside-avoid {
           page-break-inside: avoid !important;

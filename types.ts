@@ -21,6 +21,7 @@ export interface OTAAuditItem {
   channel: string;
   status: 'FAIL' | 'WARNING' | 'PASS';
   rating?: number;
+  reviewCount?: string;
   history?: { label: string; value: number }[];
   blockers: string[];
   recoveryPlan: string[];

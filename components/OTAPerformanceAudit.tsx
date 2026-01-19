@@ -6,24 +6,17 @@ interface Props {
   audit: OTAAuditItem[];
 }
 
-const RatingTrendChart: React.FC<{ history: { label: string; value: number }[] }> = ({ history }) => {
+const RatingTrendChart: React.FC<{ history: { label: string; value: number }[], maxScale: number }> = ({ history, maxScale }) => {
   if (!history || history.length < 2) return null;
 
   const width = 200;
   const height = 40;
-  
-  // Normalize data for chart visuals: if any value is > 5, assume it needs dividing by 2
-  const processedHistory = history.map(h => ({
-    ...h,
-    value: h.value > 5 ? h.value / 2 : h.value
-  }));
-
-  const maxRating = 5; 
+  const maxRating = maxScale; 
   const minRating = 0;
 
   // Calculate points
-  const points = processedHistory.map((h, i) => {
-    const x = (i / (processedHistory.length - 1)) * width;
+  const points = history.map((h, i) => {
+    const x = (i / (history.length - 1)) * width;
     const y = height - ((h.value - minRating) / (maxRating - minRating)) * height;
     return `${x},${y}`;
   }).join(' ');
@@ -33,26 +26,13 @@ const RatingTrendChart: React.FC<{ history: { label: string; value: number }[] }
   return (
     <div className="mt-4 mb-6">
       <div className="flex justify-between items-end mb-1">
-        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">6M Rating Trend</span>
-        <span className="text-[9px] font-bold text-slate-500">Scale 0-5.0</span>
+        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Trend (0-{maxScale})</span>
+        <span className="text-[8px] font-bold text-slate-300">Historical</span>
       </div>
       <div className="relative h-12 w-full bg-slate-50 rounded-lg overflow-hidden border border-slate-100 p-1">
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible" preserveAspectRatio="none">
-          {/* Fill Area */}
-          <polyline
-            points={areaPoints}
-            fill="url(#gradient)"
-            opacity="0.2"
-          />
-          {/* Main Line */}
-          <polyline
-            points={points}
-            fill="none"
-            stroke="#c54b2a"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          <polyline points={areaPoints} fill="url(#gradient)" opacity="0.2" />
+          <polyline points={points} fill="none" stroke="#c54b2a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           <defs>
             <linearGradient id="gradient" x1="0" x2="0" y1="0" y2="1">
               <stop offset="0%" stopColor="#c54b2a" />
@@ -62,7 +42,7 @@ const RatingTrendChart: React.FC<{ history: { label: string; value: number }[] }
         </svg>
       </div>
       <div className="flex justify-between mt-1 px-0.5">
-        {processedHistory.map((h, i) => (
+        {history.map((h, i) => (
           <span key={i} className="text-[7px] font-black text-slate-400 uppercase">{h.label}</span>
         ))}
       </div>
@@ -71,6 +51,9 @@ const RatingTrendChart: React.FC<{ history: { label: string; value: number }[] }
 };
 
 const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
+  const isTenScale = ['booking.com', 'agoda'].includes(item.channel.toLowerCase());
+  const maxScale = isTenScale ? 10 : 5;
+
   const getStatusStyle = (status: string) => {
     switch (status) {
       case 'FAIL': return 'bg-red-50 text-red-600 border-red-200';
@@ -80,25 +63,22 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
     }
   };
 
-  // Safe normalization for display: strictly use 5.0 scale
-  const displayRating = (item.rating && item.rating > 5) ? item.rating / 2 : item.rating;
-
   return (
-    <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 flex flex-col h-full hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-start mb-6">
+    <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 flex flex-col h-full hover:shadow-md transition-shadow break-inside-avoid">
+      <div className="flex justify-between items-start mb-4">
         <div>
           <h4 className="text-2xl font-black text-slate-800 tracking-tight">{item.channel}</h4>
-          {displayRating !== undefined && (
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className="text-sm font-black text-slate-900">{displayRating.toFixed(1)}</span>
-              <div className="flex items-center gap-0.5">
-                <svg className="w-3 h-3 text-amber-400 fill-current" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                <span className="text-[10px] font-bold text-slate-300">/ 5.0</span>
+          <div className="flex flex-col mt-1">
+             {item.rating !== undefined && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-xl font-black text-slate-900">{item.rating.toFixed(1)}</span>
+                <span className="text-[10px] font-bold text-slate-300">/ {maxScale}.0</span>
               </div>
-            </div>
-          )}
+            )}
+            {item.reviewCount && (
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{item.reviewCount}</span>
+            )}
+          </div>
         </div>
         <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${getStatusStyle(item.status)}`}>
           <div className={`w-2 h-2 rounded-full ${item.status === 'FAIL' ? 'bg-red-500' : item.status === 'WARNING' ? 'bg-amber-500' : 'bg-emerald-500'}`}></div>
@@ -106,16 +86,16 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
         </div>
       </div>
 
-      {item.history && <RatingTrendChart history={item.history} />}
+      {item.history && <RatingTrendChart history={item.history} maxScale={maxScale} />}
 
-      <div className="flex-1 space-y-8 mt-4">
+      <div className="flex-1 space-y-6 mt-2">
         <section>
           <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Channel Blockers</h5>
-          <ul className="space-y-3">
-            {item.blockers.map((blocker, idx) => (
-              <li key={idx} className="flex gap-3 items-start group">
-                <span className="text-red-500 mt-1 flex-shrink-0">•</span>
-                <span className="text-xs font-bold text-slate-700 leading-snug group-hover:text-slate-900 transition-colors">{blocker}</span>
+          <ul className="space-y-2">
+            {item.blockers.slice(0, 3).map((blocker, idx) => (
+              <li key={idx} className="flex gap-2 items-start">
+                <span className="text-red-400 text-xs flex-shrink-0 mt-0.5">•</span>
+                <span className="text-[11px] font-bold text-slate-600 leading-snug">{blocker}</span>
               </li>
             ))}
           </ul>
@@ -123,11 +103,11 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
 
         <section>
           <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Recovery Plan</h5>
-          <ul className="space-y-3">
-            {item.recoveryPlan.map((step, idx) => (
-              <li key={idx} className="flex gap-3 items-start group">
-                <span className="text-amber-600 mt-0.5 flex-shrink-0 font-bold">→</span>
-                <span className="text-xs font-bold italic text-amber-900/70 leading-snug group-hover:text-amber-900 transition-colors">{step}</span>
+          <ul className="space-y-2">
+            {item.recoveryPlan.slice(0, 2).map((step, idx) => (
+              <li key={idx} className="flex gap-2 items-start">
+                <span className="text-emerald-500 text-[10px] flex-shrink-0 mt-0.5">✔</span>
+                <span className="text-[11px] font-bold text-slate-700 leading-snug">{step}</span>
               </li>
             ))}
           </ul>
@@ -139,12 +119,12 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
 
 const OTAPerformanceAudit: React.FC<Props> = ({ audit }) => {
   return (
-    <div className="mt-20">
+    <div className="mt-20 break-before-page">
       <div className="flex items-center gap-4 mb-10">
         <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.4em]">OTA Performance Audit</h3>
         <div className="h-px flex-1 bg-slate-200"></div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {audit.map((item, idx) => (
           <OTACard key={idx} item={item} />
         ))}

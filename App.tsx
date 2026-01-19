@@ -58,16 +58,15 @@ const App: React.FC = () => {
     const hotelName = result.executiveSummary.hotelName.replace(/[^a-z0-9]/gi, '_');
     const cityName = result.executiveSummary.city.replace(/[^a-z0-9]/gi, '_');
     
-    // Create a wrapper for PDF to isolate it from web responsive styles during capture
     const opt = {
-      margin: [0.4, 0.4, 0.4, 0.4], // top, left, but, right
+      margin: [0.3, 0.4, 0.3, 0.4],
       filename: `Treebo_Strategy_${hotelName}_${cityName}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { 
         scale: 2, 
         useCORS: true,
         letterRendering: true,
-        width: 1100, // Fix width for consistent aspect ratio calculation
+        width: 1100,
         scrollY: 0,
         windowWidth: 1100,
         logging: false
@@ -79,7 +78,6 @@ const App: React.FC = () => {
     try {
       const html2pdf = (window as any).html2pdf;
       if (html2pdf) {
-        // Enforce a specific class for PDF generation to override responsive constraints
         element.classList.add('pdf-generation-mode');
         await html2pdf().set(opt).from(element).save();
         element.classList.remove('pdf-generation-mode');
@@ -131,7 +129,7 @@ const App: React.FC = () => {
               disabled={isExporting}
               className="text-xs font-black text-slate-600 bg-slate-50 hover:bg-slate-100 px-4 py-2 rounded-lg border border-slate-200 transition-all flex items-center gap-2"
             >
-               {isExporting ? 'Optimizing...' : 'Export Strategy PDF'}
+               {isExporting ? 'Optimizing PDF...' : 'Export Strategy PDF'}
             </button>
             <button 
               onClick={handleReset}
@@ -370,21 +368,21 @@ const App: React.FC = () => {
           body { background: white !important; padding: 0 !important; width: 100% !important; height: auto !important; }
           .printable-area { width: 100% !important; max-width: none !important; padding: 0 !important; margin: 0 !important; }
           .shadow-xl, .shadow-sm, .shadow-2xl { box-shadow: none !important; border: 1px solid #eee !important; }
-          .break-inside-avoid { page-break-inside: avoid; break-inside: avoid; margin-bottom: 2rem; }
-          .break-before-page { page-break-before: always; break-before: page; padding-top: 2rem; margin-top: 0 !important; }
-          .bg-slate-50, .bg-slate-50\\/50, .bg-amber-50, .bg-red-50, .bg-emerald-50 { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+          .break-inside-avoid { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 2rem !important; }
+          .break-before-page { page-break-before: always !important; break-before: page !important; padding-top: 2rem !important; margin-top: 0 !important; }
+          .bg-slate-50, .bg-slate-50\\/50, .bg-amber-50, .bg-red-50, .bg-emerald-50 { print-color-adjust: exact !important; -webkit-print-color-adjust: exact !important; }
           input { border: none !important; padding: 0 !important; font-size: 2rem !important; font-weight: 900 !important; }
-          h1, h2, h3, h4 { page-break-after: avoid; }
+          h1, h2, h3, h4 { page-break-after: avoid !important; }
           .print-title { display: block !important; }
         }
 
         /* Specialized styles for html2pdf capture */
         .pdf-generation-mode {
-          width: 1050px !important; /* Force a standard width for A4 calculation */
-          max-width: 1050px !important;
+          width: 1080px !important; 
+          max-width: 1080px !important;
           margin: 0 auto !important;
-          padding: 20px !important;
-          background: #f8fafc !important; /* slate-50 */
+          padding: 30px !important;
+          background: #f8fafc !important; 
         }
 
         .pdf-generation-mode .no-print {
@@ -415,7 +413,12 @@ const App: React.FC = () => {
         .pdf-generation-mode .break-before-page {
           page-break-before: always !important;
           break-before: page !important;
-          padding-top: 40px !important;
+          padding-top: 50px !important;
+        }
+
+        .pdf-generation-mode .ota-grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+          gap: 15px !important;
         }
       `}</style>
     </div>

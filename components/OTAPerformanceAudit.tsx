@@ -51,13 +51,14 @@ const RatingTrendChart: React.FC<{ history: { label: string; value: number }[], 
 };
 
 const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
-  const isTenScale = ['booking.com', 'agoda'].includes(item.channel.toLowerCase());
+  const channelLower = item.channel.toLowerCase();
+  const isTenScale = channelLower.includes('booking') || channelLower.includes('agoda');
   const maxScale = isTenScale ? 10 : 5;
 
   const getStatusStyle = (status: string) => {
     switch (status) {
       case 'FAIL': return 'bg-red-50 text-red-600 border-red-200';
-      case 'WARNING': return 'bg-amber-50 text-amber-600 border-amber-200';
+      case 'WARNING': return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'PASS': return 'bg-emerald-50 text-emerald-600 border-emerald-200';
       default: return 'bg-slate-50 text-slate-600 border-slate-200';
     }
@@ -76,7 +77,9 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
               </div>
             )}
             {item.reviewCount && (
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{item.reviewCount}</span>
+              <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-md w-fit mt-1">
+                {item.reviewCount}
+              </span>
             )}
           </div>
         </div>

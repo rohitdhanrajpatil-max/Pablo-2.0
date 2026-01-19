@@ -15,7 +15,7 @@ const RESPONSE_SCHEMA = {
         status: { type: Type.STRING },
         finalDecision: { type: Type.STRING, description: "Approve / Continue, Conditional, Reject / Exit, or AUTO REJECT / EXIT" },
         averageScore: { type: Type.NUMBER },
-        detectedRating: { type: Type.NUMBER, description: "The primary OTA rating normalized to a 5-point scale for consistency." },
+        detectedRating: { type: Type.NUMBER, description: "The primary OTA rating normalized to a 5-point scale for consistency in the executive badge." },
         detectedADR: { type: Type.STRING, description: "The current best available rate." }
       },
       required: ["hotelName", "city", "status", "finalDecision", "averageScore", "detectedRating", "detectedADR"]
@@ -34,13 +34,14 @@ const RESPONSE_SCHEMA = {
     },
     otaAudit: {
       type: Type.ARRAY,
+      description: "Evaluation of the 4 mandatory channels: MakeMyTrip, Google, Booking.com, and Agoda.",
       items: {
         type: Type.OBJECT,
         properties: {
-          channel: { type: Type.STRING },
+          channel: { type: Type.STRING, description: "MUST be one of: MakeMyTrip, Google, Booking.com, Agoda" },
           status: { type: Type.STRING },
-          rating: { type: Type.NUMBER, description: "Current rating. Use Scale 10 for Booking.com and Agoda. Use Scale 5 for Google and MMT." },
-          reviewCount: { type: Type.STRING, description: "Total number of reviews found, e.g. '1.2k' or '458 reviews'." },
+          rating: { type: Type.NUMBER, description: "Scale 10 for Booking.com/Agoda, Scale 5 for Google/MakeMyTrip." },
+          reviewCount: { type: Type.STRING, description: "Total reviews, e.g., '1,245 reviews'." },
           history: {
             type: Type.ARRAY,
             items: {
@@ -135,22 +136,24 @@ const RESPONSE_SCHEMA = {
 export async function evaluateHotel(input: HotelInput): Promise<EvaluationResult> {
   const prompt = `
     You are a Senior Commercial & Strategy Leader at Treebo Hotels. 
-    Evaluate the following hotel by searching online (Google Search, OTAs like MakeMyTrip, Booking.com, TripAdvisor, Agoda) for its current and historical data.
+    Conduct a deep-dive commercial evaluation of: ${input.hotelName} in ${input.city}.
     
-    Target Hotel: ${input.hotelName} in ${input.city}
-    Status: ${input.status}
+    1. MANDATORY OTA AUDIT: You MUST evaluate exactly these four channels:
+       - MakeMyTrip (Scale 5.0)
+       - Google (Scale 5.0)
+       - Booking.com (Scale 10.0)
+       - Agoda (Scale 10.0)
+       For each, search and extract the specific rating and total review count.
     
-    CRITICAL INSTRUCTIONS FOR ACCURACY:
-    1. OTA Performance Audit: 
-       - Evaluate MakeMyTrip, Booking.com, Agoda, and Google.
-       - FOR BOOKING.COM & AGODA: Use a 10-point scale for the rating. (e.g., 8.2).
-       - FOR GOOGLE & MAKEMYTRIP: Use a 5-point scale for the rating. (e.g., 4.1).
-       - MANDATORY: Include the specific review count found on each OTA.
-    2. Search Verification: Strictly identify "${input.hotelName}" in "${input.city}".
-    3. Competitor Analysis: Identify 3-4 competitors within 2km micro-market.
-    4. Market Intelligence: Identify top local corporates and travel agents that drive demand in this specific city/micro-market.
+    2. DATA GROUNDING: 
+       - Strictly verify the property location in ${input.city}.
+       - Identify room configurations and current ADR from OTA listings.
+       - Analyze competition in the immediate 2km micro-market.
+       - Identify specific local demand drivers (Top 5 Corporates & Travel Agents in ${input.city}).
     
-    Output exactly in the provided JSON schema.
+    3. BRAND FIT: Assess if the property matches Treebo standards (maintenance, inventory size, professionalism).
+    
+    Output results strictly in the provided JSON schema. Ensure historical trends in the OTA audit reflect the found search data where possible.
   `;
 
   try {
@@ -167,12 +170,6 @@ export async function evaluateHotel(input: HotelInput): Promise<EvaluationResult
     if (!response.text) throw new Error("No response from Gemini");
     
     const parsed: EvaluationResult = JSON.parse(response.text.trim());
-
-    // Basic cleanup logic to ensure no rating is zero if data exists
-    if (parsed.executiveSummary.detectedRating === 0 && parsed.otaAudit.length > 0) {
-      const google = parsed.otaAudit.find(a => a.channel.toLowerCase().includes('google'));
-      if (google) parsed.executiveSummary.detectedRating = google.rating;
-    }
 
     const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
     if (chunks) {

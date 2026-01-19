@@ -24,7 +24,7 @@ const RatingTrendChart: React.FC<{ history: { label: string; value: number }[], 
   const areaPoints = `0,${height} ${points} ${width},${height}`;
 
   return (
-    <div className="mt-4 mb-6">
+    <div className="mt-4 mb-6 chart-wrapper">
       <div className="flex justify-between items-end mb-1">
         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Trend (0-{maxScale})</span>
         <span className="text-[8px] font-bold text-slate-300">Historical</span>
@@ -64,11 +64,11 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
   };
 
   return (
-    <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 flex flex-col h-full hover:shadow-md transition-shadow break-inside-avoid">
+    <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col h-full hover:shadow-md transition-shadow break-inside-avoid ota-card">
       <div className="flex justify-between items-start mb-4">
-        <div>
-          <h4 className="text-2xl font-black text-slate-800 tracking-tight">{item.channel}</h4>
-          <div className="flex flex-col mt-1">
+        <div className="min-w-0">
+          <h4 className="text-xl font-black text-slate-800 tracking-tight truncate mb-1">{item.channel}</h4>
+          <div className="flex flex-col">
              {item.rating !== undefined && (
               <div className="flex items-center gap-1.5">
                 <span className="text-xl font-black text-slate-900">{item.rating.toFixed(1)}</span>
@@ -80,34 +80,34 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
             )}
           </div>
         </div>
-        <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${getStatusStyle(item.status)}`}>
-          <div className={`w-2 h-2 rounded-full ${item.status === 'FAIL' ? 'bg-red-500' : item.status === 'WARNING' ? 'bg-amber-500' : 'bg-emerald-500'}`}></div>
-          <span className="text-[10px] font-black uppercase tracking-widest">{item.status}</span>
+        <div className={`flex items-center gap-2 px-2.5 py-1 rounded-full border flex-shrink-0 ${getStatusStyle(item.status)}`}>
+          <div className={`w-1.5 h-1.5 rounded-full ${item.status === 'FAIL' ? 'bg-red-500' : item.status === 'WARNING' ? 'bg-amber-500' : 'bg-emerald-500'}`}></div>
+          <span className="text-[9px] font-black uppercase tracking-widest">{item.status}</span>
         </div>
       </div>
 
       {item.history && <RatingTrendChart history={item.history} maxScale={maxScale} />}
 
-      <div className="flex-1 space-y-6 mt-2">
+      <div className="flex-1 space-y-5 mt-2 overflow-hidden">
         <section>
-          <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Channel Blockers</h5>
+          <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2.5">Blockers</h5>
           <ul className="space-y-2">
             {item.blockers.slice(0, 3).map((blocker, idx) => (
               <li key={idx} className="flex gap-2 items-start">
                 <span className="text-red-400 text-xs flex-shrink-0 mt-0.5">•</span>
-                <span className="text-[11px] font-bold text-slate-600 leading-snug">{blocker}</span>
+                <span className="text-[10px] font-bold text-slate-600 leading-snug line-clamp-2">{blocker}</span>
               </li>
             ))}
           </ul>
         </section>
 
         <section>
-          <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Recovery Plan</h5>
+          <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2.5">Recovery</h5>
           <ul className="space-y-2">
             {item.recoveryPlan.slice(0, 2).map((step, idx) => (
               <li key={idx} className="flex gap-2 items-start">
-                <span className="text-emerald-500 text-[10px] flex-shrink-0 mt-0.5">✔</span>
-                <span className="text-[11px] font-bold text-slate-700 leading-snug">{step}</span>
+                <span className="text-emerald-500 text-[9px] flex-shrink-0 mt-0.5 font-bold">✔</span>
+                <span className="text-[10px] font-bold text-slate-700 leading-snug italic line-clamp-2">{step}</span>
               </li>
             ))}
           </ul>
@@ -119,12 +119,12 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
 
 const OTAPerformanceAudit: React.FC<Props> = ({ audit }) => {
   return (
-    <div className="mt-20 break-before-page">
+    <div className="mt-16 break-before-page section-ota-audit">
       <div className="flex items-center gap-4 mb-10">
-        <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.4em]">OTA Performance Audit</h3>
+        <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.4em]">Channel Performance Audit</h3>
         <div className="h-px flex-1 bg-slate-200"></div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 ota-grid">
         {audit.map((item, idx) => (
           <OTACard key={idx} item={item} />
         ))}

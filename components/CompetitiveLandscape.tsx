@@ -13,6 +13,13 @@ type MetricType = 'rating' | 'adr' | 'distance';
 
 const CompetitiveLandscape: React.FC<Props> = ({ targetName, targetRating = 0, targetADR = '0', competitors }) => {
   const [selectedMetric, setSelectedMetric] = useState<MetricType>('rating');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+
+  // Unique categories for filtering
+  const categories = useMemo(() => {
+    const cats = new Set(competitors.map(c => c.category));
+    return ['All', ...Array.from(cats)].filter(Boolean);
+  }, [competitors]);
 
   // Parser for ADR (e.g. "₹2,500" -> 2500)
   const parseADR = (adrStr: string) => {
@@ -29,6 +36,12 @@ const CompetitiveLandscape: React.FC<Props> = ({ targetName, targetRating = 0, t
     return isNaN(numeric) ? 0 : numeric;
   };
 
+  // Filtered list based on category
+  const filteredCompetitors = useMemo(() => {
+    if (selectedCategory === 'All') return competitors;
+    return competitors.filter(c => c.category === selectedCategory);
+  }, [competitors, selectedCategory]);
+
   // Memoized data for the chart and benchmarks
   const benchmarkData = useMemo(() => {
     const targetVal = 
@@ -37,12 +50,13 @@ const CompetitiveLandscape: React.FC<Props> = ({ targetName, targetRating = 0, t
       0; // Distance for target is usually 0 relative to itself
 
     const items = [
-      { name: targetName, value: targetVal, isTarget: true, original: selectedMetric === 'adr' ? targetADR : targetVal.toString() },
-      ...competitors.map(c => ({
+      { name: targetName, value: targetVal, isTarget: true, original: selectedMetric === 'adr' ? targetADR : targetVal.toString(), category: 'Target' },
+      ...filteredCompetitors.map(c => ({
         name: c.name,
         value: selectedMetric === 'rating' ? c.rating : selectedMetric === 'adr' ? parseADR(c.adr) : parseDistance(c.distance),
         isTarget: false,
-        original: selectedMetric === 'rating' ? c.rating.toString() : selectedMetric === 'adr' ? c.adr : c.distance
+        original: selectedMetric === 'rating' ? c.rating.toString() : selectedMetric === 'adr' ? c.adr : c.distance,
+        category: c.category
       }))
     ];
 
@@ -52,14 +66,14 @@ const CompetitiveLandscape: React.FC<Props> = ({ targetName, targetRating = 0, t
     // Sort logic: Distance is "lower is better", others are "higher is better"
     const sorted = [...items].sort((a, b) => selectedMetric === 'distance' ? a.value - b.value : b.value - a.value);
     
-    const marketAvg = marketItems.reduce((acc, curr) => acc + curr.value, 0) / marketItems.length;
+    const marketAvg = marketItems.length > 0 ? marketItems.reduce((acc, curr) => acc + curr.value, 0) / marketItems.length : 0;
     const targetRank = sorted.findIndex(i => i.isTarget) + 1;
     
     // Deviation calculation
-    const deviation = targetVal > 0 ? ((targetVal - marketAvg) / marketAvg) * 100 : 0;
+    const deviation = targetVal > 0 && marketAvg > 0 ? ((targetVal - marketAvg) / marketAvg) * 100 : 0;
 
     return { items, sorted, marketAvg, targetRank, targetVal, deviation };
-  }, [selectedMetric, targetName, targetRating, targetADR, competitors]);
+  }, [selectedMetric, targetName, targetRating, targetADR, filteredCompetitors]);
 
   const maxValue = Math.max(...benchmarkData.items.map(d => d.value), 1);
 
@@ -79,6 +93,24 @@ const CompetitiveLandscape: React.FC<Props> = ({ targetName, targetRating = 0, t
         <div className="h-px flex-1 bg-slate-200"></div>
       </div>
 
+      {/* Category Filter Bar */}
+      <div className="flex flex-wrap items-center gap-3 mb-8 no-print">
+        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-2">Filter by Category:</span>
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-4 py-2 text-[10px] font-black uppercase rounded-full border transition-all ${
+              selectedCategory === cat
+                ? 'bg-[#c54b2a] text-white border-[#c54b2a] shadow-md shadow-orange-100'
+                : 'bg-white text-slate-500 border-slate-200 hover:border-[#c54b2a] hover:text-[#c54b2a]'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         {/* Table View */}
         <div className="lg:col-span-7">
@@ -93,7 +125,7 @@ const CompetitiveLandscape: React.FC<Props> = ({ targetName, targetRating = 0, t
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {competitors.map((comp, idx) => (
+                {filteredCompetitors.length > 0 ? filteredCompetitors.map((comp, idx) => (
                   <tr key={idx} className="hover:bg-slate-50 transition-colors group">
                     <td className="px-8 py-6">
                       <div className="font-bold text-slate-800 text-base group-hover:text-[#c54b2a] transition-colors">{comp.name}</div>
@@ -116,7 +148,13 @@ const CompetitiveLandscape: React.FC<Props> = ({ targetName, targetRating = 0, t
                       </div>
                     </td>
                   </tr>
-                ))}
+                )) : (
+                  <tr>
+                    <td colSpan={4} className="px-8 py-12 text-center text-slate-400 font-bold">
+                      No competitors found in the selected category.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -126,7 +164,7 @@ const CompetitiveLandscape: React.FC<Props> = ({ targetName, targetRating = 0, t
         <div className="lg:col-span-5 space-y-6">
           <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
             <div className="flex justify-between items-center mb-10">
-              <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest">Benchmarking Dashboard</h4>
+              <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest">Benchmarking</h4>
               <div className="flex bg-slate-100 p-1 rounded-xl no-print">
                 {(['rating', 'adr', 'distance'] as MetricType[]).map((m) => (
                   <button 
@@ -148,7 +186,7 @@ const CompetitiveLandscape: React.FC<Props> = ({ targetName, targetRating = 0, t
               </div>
               <div className="bg-slate-50 p-6 rounded-[1.5rem] border border-slate-100">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Market Avg</p>
-                <p className="text-3xl font-black text-slate-900">
+                <p className="text-2xl font-black text-slate-900">
                   {selectedMetric === 'rating' ? benchmarkData.marketAvg.toFixed(1) : 
                    selectedMetric === 'adr' ? `₹${Math.round(benchmarkData.marketAvg).toLocaleString()}` : 
                    `${benchmarkData.marketAvg.toFixed(1)}km`}
@@ -157,7 +195,7 @@ const CompetitiveLandscape: React.FC<Props> = ({ targetName, targetRating = 0, t
             </div>
 
             {/* Market Comparison Logic */}
-            {selectedMetric !== 'distance' && (
+            {selectedMetric !== 'distance' && benchmarkData.marketAvg > 0 && (
               <div className={`mb-8 p-4 rounded-2xl flex items-center justify-between ${benchmarkData.deviation >= 0 ? 'bg-emerald-50 text-emerald-800' : 'bg-red-50 text-red-800'}`}>
                 <div className="flex items-center gap-2">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${benchmarkData.deviation >= 0 ? 'bg-emerald-100' : 'bg-red-100'}`}>
@@ -166,7 +204,7 @@ const CompetitiveLandscape: React.FC<Props> = ({ targetName, targetRating = 0, t
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
                     }
                   </div>
-                  <span className="text-sm font-black uppercase tracking-tight">Performance vs Market</span>
+                  <span className="text-[10px] font-black uppercase tracking-tight">vs {selectedCategory === 'All' ? 'Micro-Market' : selectedCategory} Avg</span>
                 </div>
                 <span className="text-xl font-black">{Math.abs(Math.round(benchmarkData.deviation))}%</span>
               </div>
@@ -181,12 +219,11 @@ const CompetitiveLandscape: React.FC<Props> = ({ targetName, targetRating = 0, t
               <div className="space-y-5">
                 {benchmarkData.items.map((data, idx) => {
                   const widthPercentage = (data.value / maxValue) * 100;
-                  // For distance, the bars show proximity (inverse of distance potentially? no, keep it absolute)
                   return (
                     <div key={idx} className="group">
                       <div className="flex justify-between items-center mb-2">
-                        <span className={`text-[11px] font-bold uppercase truncate max-w-[200px] transition-colors ${data.isTarget ? 'text-[#c54b2a] font-black' : 'text-slate-500 group-hover:text-slate-700'}`}>
-                          {data.isTarget ? 'Target Property' : data.name}
+                        <span className={`text-[11px] font-bold uppercase truncate max-w-[180px] transition-colors ${data.isTarget ? 'text-[#c54b2a] font-black' : 'text-slate-500 group-hover:text-slate-700'}`}>
+                          {data.isTarget ? 'Target' : data.name}
                         </span>
                         <span className={`text-xs font-black ${data.isTarget ? 'text-[#c54b2a]' : 'text-slate-700'}`}>
                           {data.original}

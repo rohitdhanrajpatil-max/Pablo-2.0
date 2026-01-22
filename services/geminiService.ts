@@ -34,14 +34,14 @@ const RESPONSE_SCHEMA = {
     },
     otaAudit: {
       type: Type.ARRAY,
-      description: "Evaluation of the 4 mandatory channels: MakeMyTrip, Google, Booking.com, and Agoda.",
+      description: "Mandatory evaluation of four channels: MakeMyTrip, Google, Booking.com, and Agoda.",
       items: {
         type: Type.OBJECT,
         properties: {
-          channel: { type: Type.STRING, description: "MUST be one of: MakeMyTrip, Google, Booking.com, Agoda" },
+          channel: { type: Type.STRING, description: "One of: MakeMyTrip, Google, Booking.com, Agoda" },
           status: { type: Type.STRING },
-          rating: { type: Type.NUMBER, description: "Scale 10 for Booking.com/Agoda, Scale 5 for Google/MakeMyTrip." },
-          reviewCount: { type: Type.STRING, description: "Total reviews, e.g., '1,245 reviews'." },
+          rating: { type: Type.NUMBER, description: "Scale 10.0 for Booking.com/Agoda, Scale 5.0 for Google/MakeMyTrip." },
+          reviewCount: { type: Type.STRING, description: "Formatted string of total reviews found, e.g., '1,245 reviews'." },
           history: {
             type: Type.ARRAY,
             items: {
@@ -143,7 +143,7 @@ export async function evaluateHotel(input: HotelInput): Promise<EvaluationResult
        - Google (Scale 5.0)
        - Booking.com (Scale 10.0)
        - Agoda (Scale 10.0)
-       For each, search and extract the specific rating and total review count.
+       For each, search and extract the actual rating and total review count.
     
     2. DATA GROUNDING: 
        - Strictly verify the property location in ${input.city}.

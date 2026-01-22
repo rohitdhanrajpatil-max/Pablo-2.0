@@ -71,13 +71,13 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
           <h4 className="text-xl font-black text-slate-800 tracking-tight truncate mb-1">{item.channel}</h4>
           <div className="flex flex-col">
              {item.rating !== undefined && (
-              <div className="flex items-center gap-1.5">
-                <span className="text-xl font-black text-slate-900">{item.rating.toFixed(1)}</span>
-                <span className="text-[10px] font-bold text-slate-300">/ {maxScale}.0</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-black text-slate-900 leading-none">{item.rating.toFixed(1)}</span>
+                <span className="text-xs font-bold text-slate-400">/ {maxScale}.0</span>
               </div>
             )}
             {item.reviewCount && (
-              <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-md w-fit mt-1">
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-md w-fit mt-1.5 border border-slate-200 shadow-xs">
                 {item.reviewCount}
               </span>
             )}
@@ -93,7 +93,7 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
 
       <div className="flex-1 space-y-5 mt-2 overflow-hidden">
         <section>
-          <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2.5">Blockers</h5>
+          <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2.5">Critical Blockers</h5>
           <ul className="space-y-2">
             {item.blockers.slice(0, 3).map((blocker, idx) => (
               <li key={idx} className="flex gap-2 items-start">
@@ -105,7 +105,7 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
         </section>
 
         <section>
-          <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2.5">Recovery</h5>
+          <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2.5">Yield Recovery</h5>
           <ul className="space-y-2">
             {item.recoveryPlan.slice(0, 2).map((step, idx) => (
               <li key={idx} className="flex gap-2 items-start">
@@ -124,7 +124,7 @@ const OTAPerformanceAudit: React.FC<Props> = ({ audit }) => {
   return (
     <div className="mt-16 break-before-page section-ota-audit">
       <div className="flex items-center gap-4 mb-10">
-        <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.4em]">Channel Performance Audit</h3>
+        <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.4em]">Strategic Channel Audit</h3>
         <div className="h-px flex-1 bg-slate-200"></div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 ota-grid">

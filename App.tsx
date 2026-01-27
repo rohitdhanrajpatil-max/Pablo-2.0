@@ -27,11 +27,13 @@ const App: React.FC = () => {
   useEffect(() => {
     const handleFsChange = () => setIsFullScreen(!!document.fullscreenElement);
     document.addEventListener('fullscreenchange', handleFsChange);
-    // Shortcut for Power Users
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'f' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         handleToggleFullScreen();
+      }
+      if (e.key === 'Escape' && isFullScreen) {
+        setIsFullScreen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -70,11 +72,9 @@ const App: React.FC = () => {
     if (!reportRef.current) return;
     try {
       if (!document.fullscreenElement && !isFullScreen) {
-        // Attempt native first
         try {
           await reportRef.current.requestFullscreen();
         } catch {
-          // Fallback to CSS Fullscreen
           setIsFullScreen(true);
         }
       } else {
@@ -119,13 +119,12 @@ const App: React.FC = () => {
     }
   };
 
-  const ControlStrip = () => (
-    <div className="flex items-center bg-white border border-slate-200 rounded-[1.2rem] shadow-sm px-2 py-1.5 gap-1 select-none">
-      {/* Device View Toggle - Matches icon 1 in user screenshot */}
+  const ControlStrip = ({ className = "" }: { className?: string }) => (
+    <div className={`flex items-center bg-white border border-slate-200 rounded-[1.2rem] shadow-lg px-2 py-1.5 gap-1 select-none no-print ${className}`}>
       <button 
         onClick={() => setIsMobilePreview(!isMobilePreview)}
         className={`p-2 rounded-lg transition-all ${isMobilePreview ? 'bg-slate-100 text-slate-900' : 'text-slate-400 hover:bg-slate-50'}`}
-        title="Responsive Viewport"
+        title="Toggle Layout"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -133,29 +132,23 @@ const App: React.FC = () => {
         </svg>
       </button>
 
-      {/* Reset Audit - Matches icon 2 in user screenshot */}
       <button 
         onClick={handleReset}
         className="p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-600 rounded-lg transition-all"
-        title="Refresh Data"
+        title="Reset"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
       </button>
 
-      {/* Full Screen Toggle - Matches icon 3 in user screenshot */}
       <button 
         onClick={handleToggleFullScreen}
         className={`p-2 rounded-lg transition-all ${isFullScreen ? 'bg-orange-50 text-[#c54b2a]' : 'text-slate-400 hover:bg-slate-50'}`}
-        title="Expand Viewport"
+        title="Toggle Fullscreen"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          {isFullScreen ? (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 3H3v7m11 11h7v-7M10 21H3v-7m11-11h7v7" />
-          ) : (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-          )}
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
         </svg>
       </button>
 
@@ -165,7 +158,7 @@ const App: React.FC = () => {
           <button 
             onClick={handleExportPDF}
             disabled={isExporting}
-            className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-slate-800 transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-slate-800 transition-all shadow-sm"
           >
             {isExporting ? 'Generating...' : 'Export'}
           </button>
@@ -175,16 +168,13 @@ const App: React.FC = () => {
   );
 
   const Header = () => (
-    <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-[100] no-print">
+    <header className={`bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-[100] no-print ${isFullScreen ? 'hidden' : 'block'}`}>
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="relative w-9 h-9 flex overflow-hidden rounded-xl shadow-md border border-slate-200">
             <div className="w-1/3 h-full bg-[#3e1d15]"></div>
             <div className="w-1/3 h-full bg-[#c54b2a]"></div>
             <div className="w-1/3 h-full bg-[#3e1d15]"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-white font-black text-[10px] tracking-tighter">THV</span>
-            </div>
           </div>
           <h1 className="text-sm font-black text-slate-800 tracking-tight uppercase">Treebo <span className="text-[#c54b2a]">Evaluator</span></h1>
         </div>
@@ -201,11 +191,15 @@ const App: React.FC = () => {
     return (
       <div className={`min-h-screen bg-slate-50 font-inter ${isFullScreen ? 'app-fullscreen' : ''}`}>
         <Header />
+        
+        {/* Persistent Floating Controls for Fullscreen mode */}
+        {isFullScreen && <ControlStrip className="fixed top-6 right-6 z-[10001] shadow-2xl scale-90" />}
+
         <main 
           ref={reportRef} 
           className={`max-w-7xl mx-auto px-6 py-10 report-body transition-all duration-500 ${isMobilePreview ? 'max-w-2xl' : 'max-w-7xl'} ${isFullScreen ? 'fullscreen-active' : ''}`}
         >
-          {/* Executive Summary Section */}
+          {/* Executive Header Section */}
           <div className="mb-10 break-inside-avoid">
             <div className="bg-white rounded-[3rem] border border-slate-200 shadow-2xl shadow-slate-200/50 overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-12">
@@ -322,7 +316,7 @@ const App: React.FC = () => {
             left: 0;
             right: 0;
             bottom: 0;
-            z-index: 9999;
+            z-index: 10000;
             overflow-y: auto;
             background: #f8fafc;
             padding: 40px 60px !important;
@@ -352,7 +346,7 @@ const App: React.FC = () => {
           <div className="bg-[#c54b2a] p-16 text-white relative">
             <h2 className="text-5xl font-black tracking-tighter uppercase mb-6 leading-none">Market <br/>Audit Hub</h2>
             <p className="text-orange-100 font-bold text-lg leading-relaxed max-w-lg opacity-90">
-              Commercial property evaluation for Treebo Strategic Onboarding.
+              Commercial property evaluation tool for Treebo Strategy. Grounded in real-time OTA intelligence.
             </p>
           </div>
 
@@ -360,22 +354,27 @@ const App: React.FC = () => {
             {isLoading ? (
               <div className="flex flex-col items-center py-10">
                 <div className="w-12 h-12 border-[6px] border-orange-50 border-t-[#c54b2a] rounded-full animate-spin mb-8"></div>
-                <p className="text-xs font-black text-slate-400 uppercase tracking-[0.5em]">Scanning Micro-Market...</p>
+                <p className="text-xs font-black text-slate-400 uppercase tracking-[0.5em] animate-pulse">Scanning Micro-Market Dynamics...</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-12">
-                {error && <div className="p-6 bg-red-50 border border-red-100 rounded-3xl text-red-700 text-xs font-bold">{error}</div>}
+                {error && <div className="p-6 bg-red-50 border border-red-100 rounded-3xl text-red-700 text-xs font-bold flex items-center gap-3"><svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>{error}</div>}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Property Name</label>
-                    <input type="text" value={input.hotelName} onChange={e => setInput({...input, hotelName: e.target.value})} placeholder="e.g. Treebo Trend Heritage" className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-bold focus:border-[#c54b2a] outline-none transition-all" />
+                    <input type="text" value={input.hotelName} onChange={e => setInput({...input, hotelName: e.target.value})} placeholder="e.g. Treebo Trend Heritage" className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-bold focus:border-[#c54b2a] focus:bg-white outline-none transition-all shadow-inner" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">City</label>
-                    <input type="text" value={input.city} onChange={e => setInput({...input, city: e.target.value})} placeholder="e.g. Pune" className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-bold focus:border-[#c54b2a] outline-none transition-all" />
+                    <input type="text" value={input.city} onChange={e => setInput({...input, city: e.target.value})} placeholder="e.g. Pune" className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-bold focus:border-[#c54b2a] focus:bg-white outline-none transition-all shadow-inner" />
                   </div>
                 </div>
-                <button type="submit" className="w-full py-7 bg-[#c54b2a] text-white font-black text-2xl rounded-[2rem] hover:bg-[#a63d22] transition-all">
+                <div className="flex p-2 bg-slate-100 rounded-[2rem] gap-2">
+                  {(['New Onboarding', 'Existing Treebo'] as const).map(opt => (
+                    <button key={opt} type="button" onClick={() => setInput({...input, status: opt})} className={`flex-1 py-4 rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest transition-all ${input.status === opt ? 'bg-white text-[#c54b2a] shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>{opt}</button>
+                  ))}
+                </div>
+                <button type="submit" className="w-full py-7 bg-[#c54b2a] text-white font-black text-2xl rounded-[2rem] hover:bg-[#a63d22] transition-all shadow-2xl shadow-orange-500/20 active:scale-[0.98]">
                   INITIATE AUDIT
                 </button>
               </form>

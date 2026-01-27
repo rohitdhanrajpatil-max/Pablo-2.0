@@ -26,7 +26,7 @@ const RatingTrendChart: React.FC<{ history: { label: string; value: number }[], 
     <div className="mt-4 mb-6 chart-container">
       <div className="flex justify-between items-end mb-2">
         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Performance Velocity</span>
-        <span className="text-[8px] font-bold text-slate-300">Historical Benchmarks</span>
+        <span className="text-[8px] font-bold text-slate-300">Benchmarks</span>
       </div>
       <div className="relative h-14 w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-100 p-1">
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible" preserveAspectRatio="none">
@@ -47,11 +47,6 @@ const RatingTrendChart: React.FC<{ history: { label: string; value: number }[], 
           />
         </svg>
       </div>
-      <div className="flex justify-between mt-2 px-1">
-        {history.map((h, i) => (
-          <span key={i} className="text-[7px] font-black text-slate-400 uppercase tracking-tighter">{h.label}</span>
-        ))}
-      </div>
     </div>
   );
 };
@@ -60,10 +55,10 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
   const channelLower = item.channel.toLowerCase();
   
   const getChannelTheme = () => {
-    if (channelLower.includes('agoda')) return { color: '#8b5cf6', theme: 'purple' }; // Agoda Purple
-    if (channelLower.includes('booking')) return { color: '#2563eb', theme: 'blue' }; // Booking Blue
-    if (channelLower.includes('mmt') || channelLower.includes('makemytrip')) return { color: '#dc2626', theme: 'red' }; // MMT Red
-    if (channelLower.includes('google')) return { color: '#10b981', theme: 'emerald' }; // Google Green
+    if (channelLower.includes('agoda')) return { color: '#8b5cf6', theme: 'purple' }; 
+    if (channelLower.includes('booking')) return { color: '#2563eb', theme: 'blue' };
+    if (channelLower.includes('mmt') || channelLower.includes('makemytrip')) return { color: '#dc2626', theme: 'red' };
+    if (channelLower.includes('google')) return { color: '#10b981', theme: 'emerald' };
     return { color: '#c54b2a', theme: 'orange' };
   };
 
@@ -101,9 +96,8 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
             {item.reviewCount && (
               <div className="flex items-center gap-1.5 mt-1">
                 <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-900 text-white text-[9px] font-black uppercase tracking-wider shadow-sm">
-                  {item.reviewCount}
+                  {item.reviewCount} Reviews
                 </span>
-                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Global Reach</span>
               </div>
             )}
           </div>
@@ -118,10 +112,8 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
       {item.history && <RatingTrendChart history={item.history} maxScale={maxScale} color={theme.color} />}
 
       <div className="flex-1 flex flex-col space-y-6">
-        <section className="min-h-[110px]">
-          <div className="flex items-center gap-2 mb-3">
-            <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Growth Barriers</h5>
-          </div>
+        <section className="min-h-[100px]">
+          <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Growth Barriers</h5>
           <ul className="space-y-2.5">
             {item.blockers.length > 0 ? item.blockers.slice(0, 3).map((blocker, idx) => (
               <li key={idx} className="flex gap-2.5 items-start">
@@ -129,35 +121,33 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
                 <span className="text-[11px] font-bold text-slate-600 leading-snug">{blocker}</span>
               </li>
             )) : (
-              <li className="text-[11px] font-bold text-slate-400 italic">No structural barriers.</li>
+              <li className="text-[11px] font-bold text-slate-400 italic">No structural barriers found.</li>
             )}
           </ul>
         </section>
 
-        <section className="min-h-[100px]">
-          <div className="flex items-center gap-2 mb-3">
-            <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Strategy Pivot</h5>
-          </div>
+        <section className="min-h-[90px]">
+          <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Recovery Pivot</h5>
           <ul className="space-y-2.5">
             {item.recoveryPlan.length > 0 ? item.recoveryPlan.slice(0, 2).map((step, idx) => (
-              <li key={idx} className="flex gap-2.5 items-start p-2.5 rounded-xl" style={{ backgroundColor: `${theme.color}08`, border: `1px solid ${theme.color}15` }}>
+              <li key={idx} className="flex gap-2.5 items-start p-2.5 rounded-xl bg-slate-50 border border-slate-100" style={{ borderColor: `${theme.color}20` }}>
                 <span className="text-[10px] font-black" style={{ color: theme.color }}>✓</span>
                 <span className="text-[11px] font-bold text-slate-700 leading-snug italic">{step}</span>
               </li>
             )) : (
-              <li className="text-[11px] font-bold text-slate-400 italic">Optimize existing yield.</li>
+              <li className="text-[11px] font-bold text-slate-400 italic">Maintaining stability.</li>
             )}
           </ul>
         </section>
       </div>
 
       <div className="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between">
-        <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Efficiency Index</span>
-        <div className="flex gap-1.5">
+        <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Yield Index</span>
+        <div className="flex gap-1">
           {[1,2,3,4,5,6,7,8,9,10].map(i => {
-             const normalizedRating = ((item.rating || 0) / maxScale) * 10;
+             const norm = (item.rating || 0) / maxScale * 10;
              return (
-               <div key={i} className={`w-1 h-2.5 rounded-full transition-colors`} style={{ backgroundColor: i <= Math.round(normalizedRating) ? theme.color : '#f1f5f9', opacity: i <= Math.round(normalizedRating) ? 0.6 : 1 }}></div>
+               <div key={i} className="w-1.5 h-3 rounded-full transition-all" style={{ backgroundColor: i <= norm ? theme.color : '#f1f5f9', opacity: i <= norm ? 0.7 : 1 }}></div>
              );
           })}
         </div>
@@ -182,11 +172,11 @@ const OTAPerformanceAudit: React.FC<Props> = ({ audit }) => {
         ))}
       </div>
 
-      <div className="mt-8 flex justify-between items-center">
-        <p className="text-[9px] font-bold text-slate-400 italic uppercase tracking-wider">Cross-Channel Normalization: Active</p>
-        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-white border border-slate-200 px-4 py-2 rounded-full shadow-sm">
+      <div className="mt-8 flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <p className="text-[9px] font-bold text-slate-400 italic uppercase tracking-wider">Dynamic Scaling: ACTIVE (Normalized to global 10-point yield index)</p>
+        <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          Live Market Signal
+          Synchronized Market Data
         </div>
       </div>
     </div>

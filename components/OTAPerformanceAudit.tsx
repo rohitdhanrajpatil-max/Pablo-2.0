@@ -31,12 +31,12 @@ const RatingTrendChart: React.FC<{ history: { label: string; value: number }[], 
       <div className="relative h-14 w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-100 p-1">
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible" preserveAspectRatio="none">
           <defs>
-            <linearGradient id={`gradient-${color}`} x1="0" x2="0" y1="0" y2="1">
+            <linearGradient id={`gradient-${color.replace('#','')}`} x1="0" x2="0" y1="0" y2="1">
               <stop offset="0%" stopColor={color} stopOpacity="0.2" />
               <stop offset="100%" stopColor={color} stopOpacity="0" />
             </linearGradient>
           </defs>
-          <polyline points={areaPoints} fill={`url(#gradient-${color})`} />
+          <polyline points={areaPoints} fill={`url(#gradient-${color.replace('#','')})`} />
           <polyline 
             points={points} 
             fill="none" 
@@ -68,7 +68,7 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
   };
 
   const theme = getChannelTheme();
-  const maxScale = item.maxScale || 5;
+  const maxScale = item.maxScale || (channelLower.includes('agoda') || channelLower.includes('booking') ? 10 : 5);
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -86,8 +86,8 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
       <div className="flex justify-between items-start mb-6">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <div className={`w-2 h-2 rounded-full`} style={{ backgroundColor: theme.color }}></div>
-            <h4 className="text-xl font-black text-slate-800 tracking-tight truncate transition-colors" style={{ color: item.status === 'PASS' ? '#1e293b' : 'inherit' }}>
+            <div className={`w-2.5 h-2.5 rounded-full`} style={{ backgroundColor: theme.color }}></div>
+            <h4 className="text-xl font-black text-slate-800 tracking-tight truncate">
               {item.channel}
             </h4>
           </div>
@@ -118,15 +118,15 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
       {item.history && <RatingTrendChart history={item.history} maxScale={maxScale} color={theme.color} />}
 
       <div className="flex-1 flex flex-col space-y-6">
-        <section className="min-h-[90px]">
+        <section className="min-h-[110px]">
           <div className="flex items-center gap-2 mb-3">
             <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Growth Barriers</h5>
           </div>
           <ul className="space-y-2.5">
             {item.blockers.length > 0 ? item.blockers.slice(0, 3).map((blocker, idx) => (
               <li key={idx} className="flex gap-2.5 items-start">
-                <div className="mt-1 w-1 h-1 rounded-full bg-red-200 flex-shrink-0"></div>
-                <span className="text-[11px] font-bold text-slate-600 leading-tight">{blocker}</span>
+                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-red-100 flex-shrink-0"></div>
+                <span className="text-[11px] font-bold text-slate-600 leading-snug">{blocker}</span>
               </li>
             )) : (
               <li className="text-[11px] font-bold text-slate-400 italic">No structural barriers.</li>
@@ -134,13 +134,13 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
           </ul>
         </section>
 
-        <section className="min-h-[80px]">
+        <section className="min-h-[100px]">
           <div className="flex items-center gap-2 mb-3">
             <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Strategy Pivot</h5>
           </div>
           <ul className="space-y-2.5">
             {item.recoveryPlan.length > 0 ? item.recoveryPlan.slice(0, 2).map((step, idx) => (
-              <li key={idx} className="flex gap-2.5 items-start p-2 rounded-lg" style={{ backgroundColor: `${theme.color}08`, border: `1px solid ${theme.color}15` }}>
+              <li key={idx} className="flex gap-2.5 items-start p-2.5 rounded-xl" style={{ backgroundColor: `${theme.color}08`, border: `1px solid ${theme.color}15` }}>
                 <span className="text-[10px] font-black" style={{ color: theme.color }}>✓</span>
                 <span className="text-[11px] font-bold text-slate-700 leading-snug italic">{step}</span>
               </li>
@@ -152,11 +152,14 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
       </div>
 
       <div className="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between">
-        <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Yield Index: {((item.rating || 0) / maxScale * 10).toFixed(1)}/10</span>
-        <div className="flex gap-1">
-          {[1,2,3,4,5].map(i => (
-             <div key={i} className={`w-1 h-1 rounded-full ${i <= 4 ? 'bg-slate-200' : 'bg-slate-100'}`} style={{ backgroundColor: i <= Math.round((item.rating || 0)/maxScale * 5) ? `${theme.color}40` : '#f1f5f9' }}></div>
-          ))}
+        <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Efficiency Index</span>
+        <div className="flex gap-1.5">
+          {[1,2,3,4,5,6,7,8,9,10].map(i => {
+             const normalizedRating = ((item.rating || 0) / maxScale) * 10;
+             return (
+               <div key={i} className={`w-1 h-2.5 rounded-full transition-colors`} style={{ backgroundColor: i <= Math.round(normalizedRating) ? theme.color : '#f1f5f9', opacity: i <= Math.round(normalizedRating) ? 0.6 : 1 }}></div>
+             );
+          })}
         </div>
       </div>
     </div>
@@ -180,10 +183,10 @@ const OTAPerformanceAudit: React.FC<Props> = ({ audit }) => {
       </div>
 
       <div className="mt-8 flex justify-between items-center">
-        <p className="text-[9px] font-bold text-slate-400 italic">Scales automatically normalized based on source platform API data.</p>
+        <p className="text-[9px] font-bold text-slate-400 italic uppercase tracking-wider">Cross-Channel Normalization: Active</p>
         <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-white border border-slate-200 px-4 py-2 rounded-full shadow-sm">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          Live Market Signal: Synchronized
+          Live Market Signal
         </div>
       </div>
     </div>

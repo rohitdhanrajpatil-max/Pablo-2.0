@@ -27,8 +27,19 @@ const App: React.FC = () => {
   useEffect(() => {
     const handleFsChange = () => setIsFullScreen(!!document.fullscreenElement);
     document.addEventListener('fullscreenchange', handleFsChange);
-    return () => document.removeEventListener('fullscreenchange', handleFsChange);
-  }, []);
+    // Shortcut for Power Users
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'f' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        handleToggleFullScreen();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFullScreen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,25 +60,30 @@ const App: React.FC = () => {
   };
 
   const handleReset = () => {
-    setResult(null);
-    setError(null);
+    if (confirm("Reset current audit? This will clear all calculated metrics.")) {
+      setResult(null);
+      setError(null);
+    }
   };
 
   const handleToggleFullScreen = async () => {
     if (!reportRef.current) return;
     try {
-      if (!document.fullscreenElement) {
-        // Fallback for environments that block FS or if browser FS fails
-        const fsSucceeded = await reportRef.current.requestFullscreen().catch(() => false);
-        if (fsSucceeded === false) {
-           setIsFullScreen(true); // Toggle the local "fake" fullscreen state if native fails
+      if (!document.fullscreenElement && !isFullScreen) {
+        // Attempt native first
+        try {
+          await reportRef.current.requestFullscreen();
+        } catch {
+          // Fallback to CSS Fullscreen
+          setIsFullScreen(true);
         }
       } else {
-        await document.exitFullscreen();
+        if (document.fullscreenElement) {
+          await document.exitFullscreen();
+        }
         setIsFullScreen(false);
       }
     } catch (err) {
-      // Manual state fallback for restricted iframes
       setIsFullScreen(!isFullScreen);
     }
   };
@@ -104,57 +120,56 @@ const App: React.FC = () => {
   };
 
   const ControlStrip = () => (
-    <div className="flex items-center bg-white border border-slate-200 rounded-2xl shadow-sm px-2 py-1.5 gap-1">
-      {/* Device View Toggle */}
+    <div className="flex items-center bg-white border border-slate-200 rounded-[1.2rem] shadow-sm px-2 py-1.5 gap-1 select-none">
+      {/* Device View Toggle - Matches icon 1 in user screenshot */}
       <button 
         onClick={() => setIsMobilePreview(!isMobilePreview)}
-        className={`p-2 rounded-xl transition-all ${isMobilePreview ? 'bg-orange-50 text-[#c54b2a]' : 'text-slate-400 hover:bg-slate-50'}`}
-        title="Toggle Device Layout"
+        className={`p-2 rounded-lg transition-all ${isMobilePreview ? 'bg-slate-100 text-slate-900' : 'text-slate-400 hover:bg-slate-50'}`}
+        title="Responsive Viewport"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h4" />
         </svg>
       </button>
 
-      {/* Reset Audit */}
+      {/* Reset Audit - Matches icon 2 in user screenshot */}
       <button 
         onClick={handleReset}
-        className="p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-600 rounded-xl transition-all"
-        title="Reset Audit"
+        className="p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-600 rounded-lg transition-all"
+        title="Refresh Data"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
       </button>
 
-      {/* Full Screen Toggle */}
+      {/* Full Screen Toggle - Matches icon 3 in user screenshot */}
       <button 
         onClick={handleToggleFullScreen}
-        className={`p-2 rounded-xl transition-all ${isFullScreen ? 'bg-orange-50 text-[#c54b2a]' : 'text-slate-400 hover:bg-slate-50'}`}
-        title="Fullscreen Mode"
+        className={`p-2 rounded-lg transition-all ${isFullScreen ? 'bg-orange-50 text-[#c54b2a]' : 'text-slate-400 hover:bg-slate-50'}`}
+        title="Expand Viewport"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           {isFullScreen ? (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 3h6m0 0v6m0-6L14 10M9 21H3m0 0v-6m0 6l7-7" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 3H3v7m11 11h7v-7M10 21H3v-7m11-11h7v7" />
           ) : (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
           )}
         </svg>
       </button>
 
       {result && (
-        <>
+        <div className="flex items-center">
           <div className="w-px h-6 bg-slate-100 mx-1"></div>
           <button 
             onClick={handleExportPDF}
-            className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all shadow-sm"
+            disabled={isExporting}
+            className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-slate-800 transition-all disabled:opacity-50"
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Export
+            {isExporting ? 'Generating...' : 'Export'}
           </button>
-        </>
+        </div>
       )}
     </div>
   );
@@ -171,7 +186,7 @@ const App: React.FC = () => {
               <span className="text-white font-black text-[10px] tracking-tighter">THV</span>
             </div>
           </div>
-          <h1 className="text-sm font-black text-slate-800 tracking-tight uppercase">Treebo <span className="text-[#c54b2a]">Commercial Evaluator</span></h1>
+          <h1 className="text-sm font-black text-slate-800 tracking-tight uppercase">Treebo <span className="text-[#c54b2a]">Evaluator</span></h1>
         </div>
         <ControlStrip />
       </div>
@@ -190,7 +205,7 @@ const App: React.FC = () => {
           ref={reportRef} 
           className={`max-w-7xl mx-auto px-6 py-10 report-body transition-all duration-500 ${isMobilePreview ? 'max-w-2xl' : 'max-w-7xl'} ${isFullScreen ? 'fullscreen-active' : ''}`}
         >
-          {/* Executive Header Section */}
+          {/* Executive Summary Section */}
           <div className="mb-10 break-inside-avoid">
             <div className="bg-white rounded-[3rem] border border-slate-200 shadow-2xl shadow-slate-200/50 overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-12">
@@ -299,6 +314,32 @@ const App: React.FC = () => {
             </div>
           )}
         </main>
+
+        <style>{`
+          .fullscreen-active {
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+            overflow-y: auto;
+            background: #f8fafc;
+            padding: 40px 60px !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: none !important;
+          }
+
+          .app-fullscreen header {
+            display: none !important;
+          }
+
+          @media print {
+            .no-print { display: none !important; }
+            .report-body { max-width: 100% !important; padding: 0 !important; }
+          }
+        `}</style>
       </div>
     );
   }
@@ -309,12 +350,9 @@ const App: React.FC = () => {
       <main className="max-w-4xl mx-auto px-6 py-16">
         <div className="bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-slate-200">
           <div className="bg-[#c54b2a] p-16 text-white relative">
-            <div className="absolute top-0 right-0 p-12 opacity-10">
-              <svg className="w-40 h-40" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-            </div>
             <h2 className="text-5xl font-black tracking-tighter uppercase mb-6 leading-none">Market <br/>Audit Hub</h2>
             <p className="text-orange-100 font-bold text-lg leading-relaxed max-w-lg opacity-90">
-              Onboard properties with precision. Generate enterprise-grade commercial reports grounded in real-time OTA data.
+              Commercial property evaluation for Treebo Strategic Onboarding.
             </p>
           </div>
 
@@ -322,66 +360,29 @@ const App: React.FC = () => {
             {isLoading ? (
               <div className="flex flex-col items-center py-10">
                 <div className="w-12 h-12 border-[6px] border-orange-50 border-t-[#c54b2a] rounded-full animate-spin mb-8"></div>
-                <p className="text-xs font-black text-slate-400 uppercase tracking-[0.5em] animate-pulse">Scanning Micro-Market Dynamics...</p>
+                <p className="text-xs font-black text-slate-400 uppercase tracking-[0.5em]">Scanning Micro-Market...</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-12">
-                {error && <div className="p-6 bg-red-50 border-2 border-red-100 rounded-3xl text-red-700 text-xs font-black flex items-center gap-3"><svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>{error}</div>}
+                {error && <div className="p-6 bg-red-50 border border-red-100 rounded-3xl text-red-700 text-xs font-bold">{error}</div>}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="group">
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 group-focus-within:text-[#c54b2a] transition-colors">Property Designation</label>
-                    <input type="text" value={input.hotelName} onChange={e => setInput({...input, hotelName: e.target.value})} placeholder="e.g. Treebo Trend Heritage" className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-bold focus:border-[#c54b2a] focus:bg-white outline-none transition-all shadow-inner" />
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Property Name</label>
+                    <input type="text" value={input.hotelName} onChange={e => setInput({...input, hotelName: e.target.value})} placeholder="e.g. Treebo Trend Heritage" className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-bold focus:border-[#c54b2a] outline-none transition-all" />
                   </div>
-                  <div className="group">
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 group-focus-within:text-[#c54b2a] transition-colors">Micro-Market City</label>
-                    <input type="text" value={input.city} onChange={e => setInput({...input, city: e.target.value})} placeholder="e.g. Pune" className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-bold focus:border-[#c54b2a] focus:bg-white outline-none transition-all shadow-inner" />
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">City</label>
+                    <input type="text" value={input.city} onChange={e => setInput({...input, city: e.target.value})} placeholder="e.g. Pune" className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-bold focus:border-[#c54b2a] outline-none transition-all" />
                   </div>
                 </div>
-                <div className="flex p-2 bg-slate-100 rounded-[2rem] gap-2">
-                  {(['New Onboarding', 'Existing Treebo'] as const).map(opt => (
-                    <button key={opt} type="button" onClick={() => setInput({...input, status: opt})} className={`flex-1 py-4 rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest transition-all ${input.status === opt ? 'bg-white text-[#c54b2a] shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>{opt}</button>
-                  ))}
-                </div>
-                <button type="submit" className="w-full py-7 bg-[#c54b2a] text-white font-black text-2xl rounded-[2rem] hover:bg-[#a63d22] transition-all shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 active:scale-[0.98]">
-                  INITIATE AUDIT REPORT
+                <button type="submit" className="w-full py-7 bg-[#c54b2a] text-white font-black text-2xl rounded-[2rem] hover:bg-[#a63d22] transition-all">
+                  INITIATE AUDIT
                 </button>
               </form>
             )}
           </div>
         </div>
       </main>
-
-      <style>{`
-        /* Dynamic Fullscreen Mode Overrides */
-        .app-fullscreen .report-body {
-          max-width: none !important;
-          width: 100% !important;
-          padding: 60px !important;
-          background: #f8fafc;
-        }
-
-        .fullscreen-active {
-          position: fixed !important;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          z-index: 9999;
-          overflow-y: auto;
-          background: #f8fafc;
-          padding: 80px 40px !important;
-        }
-
-        @media print {
-          .no-print { display: none !important; }
-          .report-body { max-width: 100% !important; padding: 0 !important; }
-          .break-inside-avoid { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 2rem !important; }
-          .break-before-page { page-break-before: always !important; break-before: page !important; }
-        }
-
-        .pdf-render-context { width: 1100px !important; margin: 0 auto !important; padding: 40px !important; }
-        .pdf-render-context .no-print { display: none !important; }
-      `}</style>
     </div>
   );
 };

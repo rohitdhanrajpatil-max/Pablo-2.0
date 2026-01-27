@@ -21,6 +21,7 @@ export interface OTAAuditItem {
   channel: string;
   status: 'FAIL' | 'WARNING' | 'PASS';
   rating?: number;
+  maxScale: number; // New: To handle 5.0 vs 10.0 dynamic scaling
   reviewCount?: string;
   history?: { label: string; value: number }[];
   blockers: string[];

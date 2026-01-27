@@ -6,7 +6,7 @@ interface Props {
   audit: OTAAuditItem[];
 }
 
-const RatingTrendChart: React.FC<{ history: { label: string; value: number }[], maxScale: number }> = ({ history, maxScale }) => {
+const RatingTrendChart: React.FC<{ history: { label: string; value: number }[], maxScale: number, color: string }> = ({ history, maxScale, color }) => {
   if (!history || history.length < 2) return null;
 
   const width = 240;
@@ -14,14 +14,12 @@ const RatingTrendChart: React.FC<{ history: { label: string; value: number }[], 
   const maxRating = maxScale; 
   const minRating = 0;
 
-  // Calculate points for the line
   const points = history.map((h, i) => {
     const x = (i / (history.length - 1)) * width;
     const y = height - ((h.value - minRating) / (maxRating - minRating)) * height;
     return `${x},${y}`;
   }).join(' ');
 
-  // Calculate points for the area fill
   const areaPoints = `0,${height} ${points} ${width},${height}`;
 
   return (
@@ -33,16 +31,16 @@ const RatingTrendChart: React.FC<{ history: { label: string; value: number }[], 
       <div className="relative h-14 w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-100 p-1">
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible" preserveAspectRatio="none">
           <defs>
-            <linearGradient id="areaGradient" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#c54b2a" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="#c54b2a" stopOpacity="0" />
+            <linearGradient id={`gradient-${color}`} x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor={color} stopOpacity="0.2" />
+              <stop offset="100%" stopColor={color} stopOpacity="0" />
             </linearGradient>
           </defs>
-          <polyline points={areaPoints} fill="url(#areaGradient)" />
+          <polyline points={areaPoints} fill={`url(#gradient-${color})`} />
           <polyline 
             points={points} 
             fill="none" 
-            stroke="#c54b2a" 
+            stroke={color} 
             strokeWidth="2.5" 
             strokeLinecap="round" 
             strokeLinejoin="round" 
@@ -60,15 +58,24 @@ const RatingTrendChart: React.FC<{ history: { label: string; value: number }[], 
 
 const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
   const channelLower = item.channel.toLowerCase();
-  const isTenScale = channelLower.includes('booking') || channelLower.includes('agoda');
-  const maxScale = isTenScale ? 10 : 5;
+  
+  const getChannelTheme = () => {
+    if (channelLower.includes('agoda')) return { color: '#8b5cf6', theme: 'purple' }; // Agoda Purple
+    if (channelLower.includes('booking')) return { color: '#2563eb', theme: 'blue' }; // Booking Blue
+    if (channelLower.includes('mmt') || channelLower.includes('makemytrip')) return { color: '#dc2626', theme: 'red' }; // MMT Red
+    if (channelLower.includes('google')) return { color: '#10b981', theme: 'emerald' }; // Google Green
+    return { color: '#c54b2a', theme: 'orange' };
+  };
+
+  const theme = getChannelTheme();
+  const maxScale = item.maxScale || 5;
 
   const getStatusConfig = (status: string) => {
     switch (status) {
-      case 'FAIL': return { color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-100', dot: 'bg-red-500' };
-      case 'WARNING': return { color: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-100', dot: 'bg-amber-500' };
-      case 'PASS': return { color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100', dot: 'bg-emerald-500' };
-      default: return { color: 'text-slate-600', bg: 'bg-slate-50', border: 'border-slate-100', dot: 'bg-slate-400' };
+      case 'FAIL': return { text: 'text-red-600', bg: 'bg-red-50', border: 'border-red-100', dot: 'bg-red-500' };
+      case 'WARNING': return { text: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-100', dot: 'bg-amber-500' };
+      case 'PASS': return { text: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100', dot: 'bg-emerald-500' };
+      default: return { text: 'text-slate-600', bg: 'bg-slate-50', border: 'border-slate-100', dot: 'bg-slate-400' };
     }
   };
 
@@ -76,11 +83,11 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
 
   return (
     <div className="bg-white rounded-[2.5rem] p-7 shadow-sm border border-slate-100 flex flex-col h-full hover:shadow-lg transition-all group break-inside-avoid ota-card">
-      {/* Header Section */}
       <div className="flex justify-between items-start mb-6">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-xl font-black text-slate-800 tracking-tight truncate group-hover:text-[#c54b2a] transition-colors">
+            <div className={`w-2 h-2 rounded-full`} style={{ backgroundColor: theme.color }}></div>
+            <h4 className="text-xl font-black text-slate-800 tracking-tight truncate transition-colors" style={{ color: item.status === 'PASS' ? '#1e293b' : 'inherit' }}>
               {item.channel}
             </h4>
           </div>
@@ -89,71 +96,66 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
               <span className="text-3xl font-black text-slate-900 leading-none tracking-tighter">
                 {item.rating?.toFixed(1) || 'N/A'}
               </span>
-              <span className="text-[10px] font-bold text-slate-300 uppercase">/ {maxScale}.0 Scale</span>
+              <span className="text-[10px] font-bold text-slate-300 uppercase">/ {maxScale.toFixed(1)} Scale</span>
             </div>
             {item.reviewCount && (
               <div className="flex items-center gap-1.5 mt-1">
                 <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-900 text-white text-[9px] font-black uppercase tracking-wider shadow-sm">
                   {item.reviewCount}
                 </span>
-                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Verified Volume</span>
+                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Global Reach</span>
               </div>
             )}
           </div>
         </div>
         
-        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 ${config.bg} ${config.border} ${config.color} flex-shrink-0 shadow-sm`}>
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 ${config.bg} ${config.border} ${config.text} flex-shrink-0 shadow-sm`}>
           <div className={`w-2 h-2 rounded-full ${config.dot} animate-pulse`}></div>
           <span className="text-[10px] font-black uppercase tracking-widest leading-none">{item.status}</span>
         </div>
       </div>
 
-      {/* Dynamic Trend Chart */}
-      {item.history && <RatingTrendChart history={item.history} maxScale={maxScale} />}
+      {item.history && <RatingTrendChart history={item.history} maxScale={maxScale} color={theme.color} />}
 
-      {/* List Content with Fixed Alignments */}
       <div className="flex-1 flex flex-col space-y-6">
         <section className="min-h-[90px]">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-1.5 h-1.5 rounded-full bg-red-400"></div>
-            <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Growth Blockers</h5>
+            <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Growth Barriers</h5>
           </div>
           <ul className="space-y-2.5">
             {item.blockers.length > 0 ? item.blockers.slice(0, 3).map((blocker, idx) => (
               <li key={idx} className="flex gap-2.5 items-start">
-                <div className="mt-1 w-1 h-1 rounded-full bg-slate-300 flex-shrink-0"></div>
-                <span className="text-[11px] font-bold text-slate-600 leading-tight line-clamp-2">{blocker}</span>
+                <div className="mt-1 w-1 h-1 rounded-full bg-red-200 flex-shrink-0"></div>
+                <span className="text-[11px] font-bold text-slate-600 leading-tight">{blocker}</span>
               </li>
             )) : (
-              <li className="text-[11px] font-bold text-slate-400 italic">No critical blockers detected.</li>
+              <li className="text-[11px] font-bold text-slate-400 italic">No structural barriers.</li>
             )}
           </ul>
         </section>
 
         <section className="min-h-[80px]">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
             <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Strategy Pivot</h5>
           </div>
           <ul className="space-y-2.5">
             {item.recoveryPlan.length > 0 ? item.recoveryPlan.slice(0, 2).map((step, idx) => (
-              <li key={idx} className="flex gap-2.5 items-start bg-slate-50/80 p-2 rounded-lg border border-slate-100/50">
-                <span className="text-emerald-500 text-[10px] flex-shrink-0 font-black">✓</span>
-                <span className="text-[11px] font-bold text-slate-700 leading-snug italic line-clamp-2">{step}</span>
+              <li key={idx} className="flex gap-2.5 items-start p-2 rounded-lg" style={{ backgroundColor: `${theme.color}08`, border: `1px solid ${theme.color}15` }}>
+                <span className="text-[10px] font-black" style={{ color: theme.color }}>✓</span>
+                <span className="text-[11px] font-bold text-slate-700 leading-snug italic">{step}</span>
               </li>
             )) : (
-              <li className="text-[11px] font-bold text-slate-400 italic">Maintaining current peak trajectory.</li>
+              <li className="text-[11px] font-bold text-slate-400 italic">Optimize existing yield.</li>
             )}
           </ul>
         </section>
       </div>
 
-      {/* Footer Commercial Meta */}
       <div className="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between">
-        <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Efficiency: High</span>
+        <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Yield Index: {((item.rating || 0) / maxScale * 10).toFixed(1)}/10</span>
         <div className="flex gap-1">
           {[1,2,3,4,5].map(i => (
-             <div key={i} className={`w-1 h-1 rounded-full ${i <= 4 ? 'bg-[#c54b2a]/30' : 'bg-slate-100'}`}></div>
+             <div key={i} className={`w-1 h-1 rounded-full ${i <= 4 ? 'bg-slate-200' : 'bg-slate-100'}`} style={{ backgroundColor: i <= Math.round((item.rating || 0)/maxScale * 5) ? `${theme.color}40` : '#f1f5f9' }}></div>
           ))}
         </div>
       </div>
@@ -177,7 +179,8 @@ const OTAPerformanceAudit: React.FC<Props> = ({ audit }) => {
         ))}
       </div>
 
-      <div className="mt-8 flex justify-end">
+      <div className="mt-8 flex justify-between items-center">
+        <p className="text-[9px] font-bold text-slate-400 italic">Scales automatically normalized based on source platform API data.</p>
         <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-white border border-slate-200 px-4 py-2 rounded-full shadow-sm">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           Live Market Signal: Synchronized

@@ -15,8 +15,8 @@ const RESPONSE_SCHEMA = {
         status: { type: Type.STRING },
         finalDecision: { type: Type.STRING, description: "Approve / Continue, Conditional, Reject / Exit, or AUTO REJECT / EXIT" },
         averageScore: { type: Type.NUMBER },
-        detectedRating: { type: Type.NUMBER, description: "The primary OTA rating normalized to a 5-point scale for consistency in the executive badge." },
-        detectedADR: { type: Type.STRING, description: "The current best available rate." }
+        detectedRating: { type: Type.NUMBER },
+        detectedADR: { type: Type.STRING }
       },
       required: ["hotelName", "city", "status", "finalDecision", "averageScore", "detectedRating", "detectedADR"]
     },
@@ -38,10 +38,11 @@ const RESPONSE_SCHEMA = {
       items: {
         type: Type.OBJECT,
         properties: {
-          channel: { type: Type.STRING, description: "One of: MakeMyTrip, Google, Booking.com, Agoda" },
+          channel: { type: Type.STRING },
           status: { type: Type.STRING },
-          rating: { type: Type.NUMBER, description: "Scale 10.0 for Booking.com/Agoda, Scale 5.0 for Google/MakeMyTrip." },
-          reviewCount: { type: Type.STRING, description: "Formatted string of total reviews found, e.g., '1,245 reviews'." },
+          rating: { type: Type.NUMBER },
+          maxScale: { type: Type.NUMBER, description: "Usually 5 or 10 depending on how the rating is displayed on that platform." },
+          reviewCount: { type: Type.STRING },
           history: {
             type: Type.ARRAY,
             items: {
@@ -56,7 +57,7 @@ const RESPONSE_SCHEMA = {
           blockers: { type: Type.ARRAY, items: { type: Type.STRING } },
           recoveryPlan: { type: Type.ARRAY, items: { type: Type.STRING } }
         },
-        required: ["channel", "status", "rating", "reviewCount", "blockers", "recoveryPlan"]
+        required: ["channel", "status", "rating", "maxScale", "reviewCount", "blockers", "recoveryPlan"]
       }
     },
     roomTypes: {
@@ -135,25 +136,18 @@ const RESPONSE_SCHEMA = {
 
 export async function evaluateHotel(input: HotelInput): Promise<EvaluationResult> {
   const prompt = `
-    You are a Senior Commercial & Strategy Leader at Treebo Hotels. 
     Conduct a deep-dive commercial evaluation of: ${input.hotelName} in ${input.city}.
     
-    1. MANDATORY OTA AUDIT: You MUST evaluate exactly these four channels:
-       - MakeMyTrip (Scale 5.0)
-       - Google (Scale 5.0)
-       - Booking.com (Scale 10.0)
-       - Agoda (Scale 10.0)
-       For each, search and extract the actual rating and total review count.
+    CRITICAL: For the OTA Audit, evaluate exactly these four: MakeMyTrip, Google, Booking.com, and Agoda.
+    For Agoda specifically, verify if the rating is out of 10.0 or 5.0 in the local market and set 'maxScale' accordingly.
     
-    2. DATA GROUNDING: 
-       - Strictly verify the property location in ${input.city}.
-       - Identify room configurations and current ADR from OTA listings.
-       - Analyze competition in the immediate 2km micro-market.
-       - Identify specific local demand drivers (Top 5 Corporates & Travel Agents in ${input.city}).
+    DATA GROUNDING: 
+    - Verify property location and branding status.
+    - Extract live ADR and room configurations.
+    - Analyze the 2km micro-market competition.
+    - Identify top local demand drivers.
     
-    3. BRAND FIT: Assess if the property matches Treebo standards (maintenance, inventory size, professionalism).
-    
-    Output results strictly in the provided JSON schema. Ensure historical trends in the OTA audit reflect the found search data where possible.
+    Ensure the output strictly follows the schema.
   `;
 
   try {
@@ -168,18 +162,16 @@ export async function evaluateHotel(input: HotelInput): Promise<EvaluationResult
     });
 
     if (!response.text) throw new Error("No response from Gemini");
-    
     const parsed: EvaluationResult = JSON.parse(response.text.trim());
 
     const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
     if (chunks) {
-      const sources: GroundingSource[] = chunks
+      parsed.groundingSources = chunks
         .filter((c: any) => c.web)
         .map((c: any) => ({
           title: c.web.title || 'Source',
           uri: c.web.uri
         }));
-      parsed.groundingSources = sources;
     }
 
     return parsed;

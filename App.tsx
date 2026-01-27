@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { evaluateHotel } from './services/geminiService';
 import { HotelInput, EvaluationResult } from './types';
 import DecisionBadge from './components/DecisionBadge';
@@ -18,10 +18,20 @@ const App: React.FC = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
   const [result, setResult] = useState<EvaluationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showValidation, setShowValidation] = useState(false);
   const reportRef = useRef<HTMLElement>(null);
+
+  // Sync fullscreen state with browser events
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullScreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,24 +60,35 @@ const App: React.FC = () => {
     setShowValidation(false);
   };
 
+  const handleToggleFullScreen = async () => {
+    if (!reportRef.current) return;
+    try {
+      if (!document.fullscreenElement) {
+        await reportRef.current.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.error("Fullscreen toggle failed:", err);
+    }
+  };
+
   const handleExportPDF = async () => {
     if (!reportRef.current || !result) return;
     
     setIsExporting(true);
     const element = reportRef.current;
     const hotelName = result.executiveSummary.hotelName.replace(/[^a-z0-9]/gi, '_');
-    const cityName = result.executiveSummary.city.replace(/[^a-z0-9]/gi, '_');
     
-    // Configuration for high-quality PDF output
     const opt = {
-      margin: [0.4, 0.4, 0.4, 0.4], // 0.4 inch margins on all sides
+      margin: [0.4, 0.4, 0.4, 0.4],
       filename: `Treebo_Strategy_Report_${hotelName}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { 
-        scale: 3, // Increased scale for crispness
+        scale: 3,
         useCORS: true,
         letterRendering: true,
-        width: 1200, // Fixed width for consistent layout
+        width: 1200,
         scrollY: 0,
         windowWidth: 1200,
         logging: false
@@ -83,13 +104,9 @@ const App: React.FC = () => {
     try {
       const html2pdf = (window as any).html2pdf;
       if (html2pdf) {
-        // Prepare the DOM for PDF capture
         document.body.classList.add('is-exporting');
         element.classList.add('pdf-render-context');
-        
         await html2pdf().set(opt).from(element).save();
-        
-        // Clean up
         document.body.classList.remove('is-exporting');
         element.classList.remove('pdf-render-context');
       } else {
@@ -136,22 +153,31 @@ const App: React.FC = () => {
         {result && (
           <div className="flex items-center gap-2">
             <button 
+              onClick={handleToggleFullScreen}
+              className="text-xs font-black text-slate-600 bg-slate-50 hover:bg-slate-100 px-4 py-2 rounded-lg border border-slate-200 transition-all flex items-center gap-2"
+              title={isFullScreen ? "Exit Full Screen" : "Presentation Mode"}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isFullScreen ? (
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 9L4 4m0 0l5 0m-5 0l0 5m11 0l5-5m0 0l-5 0m5 0l0 5m-5 11l5 5m0 0l-5 0m5 0l0-5m-11 0l-5 5m0 0l5 0m-5 0l0-5" />
+                ) : (
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                )}
+              </svg>
+              {isFullScreen ? "Minimize" : "Full Screen"}
+            </button>
+            <button 
               onClick={handleExportPDF}
               disabled={isExporting}
               className={`text-xs font-black px-4 py-2 rounded-lg border transition-all flex items-center gap-2 ${isExporting ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`}
             >
-               {isExporting ? (
-                 <>
-                   <div className="w-3 h-3 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
-                   Generating PDF...
-                 </>
-               ) : 'Export High-Res PDF'}
+               {isExporting ? "Generating..." : "Export PDF"}
             </button>
             <button 
               onClick={handleReset}
-              className="text-xs font-black text-white bg-[#c54b2a] hover:bg-[#a63d22] px-4 py-2 rounded-lg transition-all flex items-center gap-1 shadow-md shadow-orange-100"
+              className="text-xs font-black text-white bg-[#c54b2a] hover:bg-[#a63d22] px-4 py-2 rounded-lg transition-all shadow-md shadow-orange-100"
             >
-              Start Over
+              Reset
             </button>
           </div>
         )}
@@ -184,7 +210,11 @@ const App: React.FC = () => {
     return (
       <div className="min-h-screen bg-slate-50 pb-12 font-inter overflow-x-hidden">
         {renderHeader()}
-        <main ref={reportRef} className="max-w-7xl mx-auto px-4 py-8 report-body">
+        <main 
+          ref={reportRef} 
+          className={`max-w-7xl mx-auto px-4 py-8 report-body ${isFullScreen ? 'is-fullscreen-view' : ''}`}
+        >
+          {/* Top Level Strategic Header */}
           <div className="mb-10 break-inside-avoid">
             <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-xl overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-12">
@@ -390,11 +420,21 @@ const App: React.FC = () => {
           .print-only-title { display: block !important; }
         }
 
+        /* Full Screen Presentation Mode Styles */
+        .is-fullscreen-view {
+          background-color: #f8fafc !important; /* bg-slate-50 */
+          height: 100vh !important;
+          overflow-y: auto !important;
+          padding: 60px !important;
+          max-width: none !important;
+          width: 100% !important;
+        }
+
         /* html2pdf specific rendering context overrides */
         .pdf-render-context {
-          width: 1100px !important; /* Force a standard desktop-like width */
+          width: 1100px !important; 
           margin: 0 auto !important;
-          background-color: #f8fafc !important; /* bg-slate-50 */
+          background-color: #f8fafc !important; 
           padding: 30px !important;
         }
 
@@ -414,7 +454,6 @@ const App: React.FC = () => {
           display: grid !important;
         }
 
-        /* Ensure column spans are respected in PDF capture regardless of viewport */
         .pdf-render-context .lg\\:col-span-8 { grid-column: span 8 / span 8 !important; }
         .pdf-render-context .lg\\:col-span-4 { grid-column: span 4 / span 4 !important; }
         .pdf-render-context .lg\\:col-span-12 { grid-column: span 12 / span 12 !important; }
@@ -426,7 +465,6 @@ const App: React.FC = () => {
         .pdf-render-context .lg\\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
         .pdf-render-context .md\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 
-        /* Smooth pagination */
         .pdf-render-context .break-before-page {
           page-break-before: always !important;
           break-before: page !important;

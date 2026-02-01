@@ -61,10 +61,21 @@ const App: React.FC = () => {
     }
   };
 
+  const handleNewSearch = () => {
+    setResult(null);
+    setError(null);
+    setInput({
+      hotelName: '',
+      city: '',
+      status: 'New Onboarding',
+      rawDetails: ''
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleReset = () => {
     if (confirm("Reset current audit? This will clear all calculated metrics.")) {
-      setResult(null);
-      setError(null);
+      handleNewSearch();
     }
   };
 
@@ -96,7 +107,7 @@ const App: React.FC = () => {
     
     const opt = {
       margin: [0.4, 0.4, 0.4, 0.4],
-      filename: `Treebo_Audit_${hotelName}.pdf`,
+      filename: `Audit_Report_${hotelName}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 3, useCORS: true, letterRendering: true, width: 1200 },
       jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
@@ -127,7 +138,7 @@ const App: React.FC = () => {
         title="Toggle Layout"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2h4" />
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h4" />
         </svg>
       </button>
@@ -135,7 +146,7 @@ const App: React.FC = () => {
       <button 
         onClick={handleReset}
         className="p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-600 rounded-lg transition-all"
-        title="Reset"
+        title="Clear Audit"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -144,7 +155,7 @@ const App: React.FC = () => {
 
       <button 
         onClick={handleToggleFullScreen}
-        className={`p-2 rounded-lg transition-all ${isFullScreen ? 'bg-orange-50 text-[#c54b2a]' : 'text-slate-400 hover:bg-slate-50'}`}
+        className={`p-2 rounded-lg transition-all ${isFullScreen ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:bg-slate-50'}`}
         title="Toggle Fullscreen"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,14 +164,21 @@ const App: React.FC = () => {
       </button>
 
       {result && (
-        <div className="flex items-center">
+        <div className="flex items-center gap-1 ml-1">
           <div className="w-px h-6 bg-slate-100 mx-1"></div>
+          <button 
+            onClick={handleNewSearch}
+            className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-indigo-700 transition-all shadow-sm"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            New Audit
+          </button>
           <button 
             onClick={handleExportPDF}
             disabled={isExporting}
             className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-slate-800 transition-all shadow-sm"
           >
-            {isExporting ? 'Generating...' : 'Export'}
+            {isExporting ? '...' : 'Export'}
           </button>
         </div>
       )}
@@ -171,12 +189,12 @@ const App: React.FC = () => {
     <header className={`bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-[100] no-print ${isFullScreen ? 'hidden' : 'block'}`}>
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="relative w-9 h-9 flex overflow-hidden rounded-xl shadow-md border border-slate-200">
-            <div className="w-1/3 h-full bg-[#3e1d15]"></div>
-            <div className="w-1/3 h-full bg-[#c54b2a]"></div>
-            <div className="w-1/3 h-full bg-[#3e1d15]"></div>
+          <div className="w-9 h-9 flex items-center justify-center bg-indigo-600 rounded-xl shadow-md border border-indigo-700">
+             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+             </svg>
           </div>
-          <h1 className="text-sm font-black text-slate-800 tracking-tight uppercase">Treebo <span className="text-[#c54b2a]">Evaluator</span></h1>
+          <h1 className="text-sm font-black text-slate-800 tracking-tight uppercase">Strategic <span className="text-indigo-600">Evaluator</span></h1>
         </div>
         <ControlStrip />
       </div>
@@ -184,29 +202,35 @@ const App: React.FC = () => {
   );
 
   if (result) {
-    const { executiveSummary, scorecard, otaAudit, roomTypes, competitors, topCorporates, topTravelAgents, keyRisks, commercialUpside, finalRecommendation, conditionalActionPlan, hardStopFlag, hardStopDetails, groundingSources = [] } = result;
-    const isNew = executiveSummary.status.toLowerCase().includes('new');
-    const themeColor = isNew ? "bg-[#c54b2a]" : "bg-[#3e1d15]";
+    const { executiveSummary, scorecard, otaAudit, roomTypes, competitors, topCorporates, topTravelAgents, keyRisks, commercialUpside, finalRecommendation, groundingSources = [] } = result;
+    const themeColor = "bg-indigo-600";
 
     return (
       <div className={`min-h-screen bg-slate-50 font-inter ${isFullScreen ? 'app-fullscreen' : ''}`}>
         <Header />
         
-        {/* Persistent Floating Controls for Fullscreen mode */}
         {isFullScreen && <ControlStrip className="fixed top-6 right-6 z-[10001] shadow-2xl scale-90" />}
 
         <main 
           ref={reportRef} 
           className={`max-w-7xl mx-auto px-6 py-10 report-body transition-all duration-500 ${isMobilePreview ? 'max-w-2xl' : 'max-w-7xl'} ${isFullScreen ? 'fullscreen-active' : ''}`}
         >
-          {/* Executive Header Section */}
           <div className="mb-10 break-inside-avoid">
             <div className="bg-white rounded-[3rem] border border-slate-200 shadow-2xl shadow-slate-200/50 overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-12">
                 <div className="lg:col-span-8 p-12">
                   <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Assessment Profile</p>
+                      <button 
+                        onClick={handleNewSearch} 
+                        className="no-print flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        New Evaluation
+                      </button>
+                    </div>
                     <div>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Portfolio Deep-Dive Assessment</p>
                       <h1 className="text-5xl font-black text-slate-900 tracking-tight leading-none mb-2">{executiveSummary.hotelName}</h1>
                       <div className="flex items-center gap-3">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black uppercase tracking-wider">
@@ -222,11 +246,11 @@ const App: React.FC = () => {
 
                 <div className="lg:col-span-4 bg-slate-50/50 p-12 flex flex-col items-end justify-center gap-6 border-l border-slate-100">
                   <div className="text-right">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Decision Verdict</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Decision Status</p>
                     <DecisionBadge decision={executiveSummary.finalDecision} size="lg" />
                   </div>
                   <div className="text-right">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Strategic Fit Index</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Market Alignment Score</p>
                     <div className="flex items-baseline justify-end gap-1">
                       <span className="text-6xl font-black text-slate-900 leading-none">{executiveSummary.averageScore.toFixed(1)}</span>
                       <span className="text-lg font-bold text-slate-300">/10</span>
@@ -236,18 +260,6 @@ const App: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {hardStopFlag && (
-            <div className="bg-red-50 border-2 border-red-200 rounded-[2rem] p-8 mb-10 flex items-start gap-6 break-inside-avoid">
-              <div className="w-14 h-14 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center flex-shrink-0 border border-red-200 shadow-sm">
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-              </div>
-              <div className="space-y-1">
-                <h4 className="font-black text-red-800 uppercase text-xs tracking-[0.3em]">Critical Commercial Hard-Stop</h4>
-                <p className="text-red-700 text-lg font-bold leading-tight">{hardStopDetails}</p>
-              </div>
-            </div>
-          )}
 
           <div className={`grid grid-cols-1 ${isMobilePreview ? 'lg:grid-cols-1' : 'lg:grid-cols-3'} gap-8 mb-10`}>
             <div className="lg:col-span-2 space-y-8">
@@ -262,7 +274,7 @@ const App: React.FC = () => {
             <div className="space-y-8">
               <section className="bg-white rounded-[2.5rem] p-10 border border-slate-200 break-inside-avoid">
                 <h3 className="text-[10px] font-black text-red-600 mb-8 uppercase tracking-[0.3em] flex items-center gap-2">
-                   <div className="w-2 h-2 rounded-full bg-red-500"></div> Risks Audit
+                   <div className="w-2 h-2 rounded-full bg-red-500"></div> Identified Risks
                 </h3>
                 <ul className="space-y-5">
                   {keyRisks.map((risk, idx) => (
@@ -276,7 +288,7 @@ const App: React.FC = () => {
 
               <section className="bg-white rounded-[2.5rem] p-10 border border-slate-200 break-inside-avoid">
                 <h3 className="text-[10px] font-black text-emerald-600 mb-8 uppercase tracking-[0.3em] flex items-center gap-2">
-                   <div className="w-2 h-2 rounded-full bg-emerald-500"></div> Upside Potential
+                   <div className="w-2 h-2 rounded-full bg-emerald-500"></div> Growth Opportunities
                 </h3>
                 <ul className="space-y-5">
                   {commercialUpside.map((upside, idx) => (
@@ -297,16 +309,26 @@ const App: React.FC = () => {
 
           {groundingSources.length > 0 && (
             <div className="mt-20 pt-10 border-t border-slate-200 no-print">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4">Commercial Data Sources</p>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4">Market Data Sources</p>
               <div className="flex flex-wrap gap-2">
                 {groundingSources.map((s, i) => (
-                  <a key={i} href={s.uri} target="_blank" rel="noopener" className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 hover:text-[#c54b2a] transition-all shadow-sm">
+                  <a key={i} href={s.uri} target="_blank" rel="noopener" className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 hover:text-indigo-600 transition-all shadow-sm">
                     {s.title}
                   </a>
                 ))}
               </div>
             </div>
           )}
+
+          <div className="mt-20 py-20 text-center no-print">
+            <h4 className="text-xl font-black text-slate-800 mb-6">Complete Audit?</h4>
+            <button 
+              onClick={handleNewSearch} 
+              className="px-10 py-5 bg-indigo-600 text-white font-black text-lg rounded-[2rem] hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-500/20"
+            >
+              Evaluate New Property
+            </button>
+          </div>
         </main>
 
         <style>{`
@@ -339,43 +361,72 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 font-inter">
+    <div className="min-h-screen bg-slate-50 font-inter text-slate-900">
       <Header />
       <main className="max-w-4xl mx-auto px-6 py-16">
         <div className="bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-slate-200">
-          <div className="bg-[#c54b2a] p-16 text-white relative">
+          <div className="bg-indigo-600 p-16 text-white relative">
             <h2 className="text-5xl font-black tracking-tighter uppercase mb-6 leading-none">Market <br/>Audit Hub</h2>
-            <p className="text-orange-100 font-bold text-lg leading-relaxed max-w-lg opacity-90">
-              Commercial property evaluation tool for Treebo Strategy. Grounded in real-time OTA intelligence.
+            <p className="text-indigo-100 font-bold text-lg leading-relaxed max-w-lg opacity-90">
+              High-fidelity property evaluation and micro-market analysis for strategic portfolio growth.
             </p>
           </div>
 
           <div className="p-16">
             {isLoading ? (
               <div className="flex flex-col items-center py-10">
-                <div className="w-12 h-12 border-[6px] border-orange-50 border-t-[#c54b2a] rounded-full animate-spin mb-8"></div>
-                <p className="text-xs font-black text-slate-400 uppercase tracking-[0.5em] animate-pulse">Scanning Micro-Market Dynamics...</p>
+                <div className="w-12 h-12 border-[6px] border-indigo-50 border-t-indigo-600 rounded-full animate-spin mb-8"></div>
+                <p className="text-xs font-black text-slate-400 uppercase tracking-[0.5em] animate-pulse text-center">
+                  Synthesizing Market Data...<br/>
+                  <span className="text-[10px] font-bold opacity-60">Cross-referencing OTA and Local demand signals</span>
+                </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-12">
-                {error && <div className="p-6 bg-red-50 border border-red-100 rounded-3xl text-red-700 text-xs font-bold flex items-center gap-3"><svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>{error}</div>}
+                {error && (
+                  <div className="p-6 bg-red-50 border border-red-100 rounded-3xl text-red-700 text-xs font-bold flex items-center gap-3">
+                    {error}
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Property Name</label>
-                    <input type="text" value={input.hotelName} onChange={e => setInput({...input, hotelName: e.target.value})} placeholder="e.g. Treebo Trend Heritage" className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-bold focus:border-[#c54b2a] focus:bg-white outline-none transition-all shadow-inner" />
+                    <input 
+                      type="text" 
+                      value={input.hotelName} 
+                      onChange={e => setInput({...input, hotelName: e.target.value})} 
+                      placeholder="e.g. Grand Heritage Hotel" 
+                      className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all shadow-inner" 
+                    />
                   </div>
                   <div>
                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">City</label>
-                    <input type="text" value={input.city} onChange={e => setInput({...input, city: e.target.value})} placeholder="e.g. Pune" className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-bold focus:border-[#c54b2a] focus:bg-white outline-none transition-all shadow-inner" />
+                    <input 
+                      type="text" 
+                      value={input.city} 
+                      onChange={e => setInput({...input, city: e.target.value})} 
+                      placeholder="e.g. New Delhi" 
+                      className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-bold focus:border-indigo-600 focus:bg-white outline-none transition-all shadow-inner" 
+                    />
                   </div>
                 </div>
                 <div className="flex p-2 bg-slate-100 rounded-[2rem] gap-2">
-                  {(['New Onboarding', 'Existing Treebo'] as const).map(opt => (
-                    <button key={opt} type="button" onClick={() => setInput({...input, status: opt})} className={`flex-1 py-4 rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest transition-all ${input.status === opt ? 'bg-white text-[#c54b2a] shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>{opt}</button>
+                  {(['New Onboarding', 'Portfolio Health'] as const).map(opt => (
+                    <button 
+                      key={opt} 
+                      type="button" 
+                      onClick={() => setInput({...input, status: opt as any})} 
+                      className={`flex-1 py-4 rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest transition-all ${input.status === opt ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      {opt}
+                    </button>
                   ))}
                 </div>
-                <button type="submit" className="w-full py-7 bg-[#c54b2a] text-white font-black text-2xl rounded-[2rem] hover:bg-[#a63d22] transition-all shadow-2xl shadow-orange-500/20 active:scale-[0.98]">
-                  INITIATE AUDIT
+                <button 
+                  type="submit" 
+                  className="w-full py-7 bg-indigo-600 text-white font-black text-2xl rounded-[2rem] hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-500/20 active:scale-[0.98]"
+                >
+                  START ANALYSIS
                 </button>
               </form>
             )}

@@ -59,7 +59,7 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
     if (channelLower.includes('booking')) return { color: '#2563eb', theme: 'blue' };
     if (channelLower.includes('mmt') || channelLower.includes('makemytrip')) return { color: '#dc2626', theme: 'red' };
     if (channelLower.includes('google')) return { color: '#10b981', theme: 'emerald' };
-    return { color: '#c54b2a', theme: 'orange' };
+    return { color: '#4f46e5', theme: 'indigo' };
   };
 
   const theme = getChannelTheme();
@@ -93,13 +93,6 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
               </span>
               <span className="text-[10px] font-bold text-slate-300 uppercase">/ {maxScale.toFixed(1)} Scale</span>
             </div>
-            {item.reviewCount && (
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-900 text-white text-[9px] font-black uppercase tracking-wider shadow-sm">
-                  {item.reviewCount} Reviews
-                </span>
-              </div>
-            )}
           </div>
         </div>
         
@@ -113,21 +106,21 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
 
       <div className="flex-1 flex flex-col space-y-6">
         <section className="min-h-[100px]">
-          <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Growth Barriers</h5>
+          <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Market Barriers</h5>
           <ul className="space-y-2.5">
             {item.blockers.length > 0 ? item.blockers.slice(0, 3).map((blocker, idx) => (
               <li key={idx} className="flex gap-2.5 items-start">
-                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-red-100 flex-shrink-0"></div>
+                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-slate-200 flex-shrink-0"></div>
                 <span className="text-[11px] font-bold text-slate-600 leading-snug">{blocker}</span>
               </li>
             )) : (
-              <li className="text-[11px] font-bold text-slate-400 italic">No structural barriers found.</li>
+              <li className="text-[11px] font-bold text-slate-400 italic">No significant barriers.</li>
             )}
           </ul>
         </section>
 
         <section className="min-h-[90px]">
-          <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Recovery Pivot</h5>
+          <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Commercial Strategy</h5>
           <ul className="space-y-2.5">
             {item.recoveryPlan.length > 0 ? item.recoveryPlan.slice(0, 2).map((step, idx) => (
               <li key={idx} className="flex gap-2.5 items-start p-2.5 rounded-xl bg-slate-50 border border-slate-100" style={{ borderColor: `${theme.color}20` }}>
@@ -135,7 +128,7 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
                 <span className="text-[11px] font-bold text-slate-700 leading-snug italic">{step}</span>
               </li>
             )) : (
-              <li className="text-[11px] font-bold text-slate-400 italic">Maintaining stability.</li>
+              <li className="text-[11px] font-bold text-slate-400 italic">Maintaining current position.</li>
             )}
           </ul>
         </section>
@@ -173,10 +166,10 @@ const OTAPerformanceAudit: React.FC<Props> = ({ audit }) => {
       </div>
 
       <div className="mt-8 flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-        <p className="text-[9px] font-bold text-slate-400 italic uppercase tracking-wider">Dynamic Scaling: ACTIVE (Normalized to global 10-point yield index)</p>
-        <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          Synchronized Market Data
+        <p className="text-[9px] font-bold text-slate-400 italic uppercase tracking-wider">Analysis: Normalized to global 10-point performance scale</p>
+        <div className="flex items-center gap-2 text-[10px] font-bold text-indigo-600 uppercase tracking-widest">
+          <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+          Synchronized Data Stream
         </div>
       </div>
     </div>

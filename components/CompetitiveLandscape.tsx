@@ -80,8 +80,8 @@ const CompetitiveLandscape: React.FC<Props> = ({ targetName, targetRating = 0, t
             onClick={() => setSelectedCategory(cat)}
             className={`px-4 py-2 text-[10px] font-black uppercase rounded-full border transition-all ${
               selectedCategory === cat
-                ? 'bg-indigo-600 text-white border-indigo-600 shadow-md'
-                : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-600'
+                ? 'bg-[#c54b2a] text-white border-[#c54b2a] shadow-md'
+                : 'bg-white text-slate-500 border-slate-200 hover:border-[#c54b2a]'
             }`}
           >
             {cat}
@@ -105,14 +105,14 @@ const CompetitiveLandscape: React.FC<Props> = ({ targetName, targetRating = 0, t
                 {filteredCompetitors.map((comp, idx) => (
                   <tr key={idx} className="hover:bg-slate-50 transition-colors group">
                     <td className="px-8 py-6">
-                      <div className="font-bold text-slate-800 text-base group-hover:text-indigo-600 transition-colors">{comp.name}</div>
+                      <div className="font-bold text-slate-800 text-base group-hover:text-[#c54b2a] transition-colors">{comp.name}</div>
                       <div className="text-[10px] font-bold text-slate-400 uppercase mt-1">{comp.category}</div>
                     </td>
                     <td className="px-8 py-6 text-center">
                       <span className="text-base font-black text-slate-800">{comp.rating}</span>
                     </td>
                     <td className="px-8 py-6 text-center">
-                      <div className="text-lg font-black text-indigo-600">{comp.adr}</div>
+                      <div className="text-lg font-black text-[#c54b2a]">{comp.adr}</div>
                     </td>
                     <td className="px-8 py-6 text-right">
                       <div className="text-slate-600 font-bold bg-slate-100/50 py-1 px-3 rounded-full ml-auto w-fit">{comp.distance}</div>
@@ -133,7 +133,7 @@ const CompetitiveLandscape: React.FC<Props> = ({ targetName, targetRating = 0, t
                   <button 
                     key={m}
                     onClick={() => setSelectedMetric(m)}
-                    className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition-all ${selectedMetric === m ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition-all ${selectedMetric === m ? 'bg-white text-[#c54b2a] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                   >
                     {m}
                   </button>
@@ -158,14 +158,14 @@ const CompetitiveLandscape: React.FC<Props> = ({ targetName, targetRating = 0, t
                 return (
                   <div key={idx} className="group">
                     <div className="flex justify-between items-center mb-2">
-                      <span className={`text-[11px] font-bold uppercase truncate max-w-[180px] ${data.isTarget ? 'text-indigo-600 font-black' : 'text-slate-500'}`}>
+                      <span className={`text-[11px] font-bold uppercase truncate max-w-[180px] ${data.isTarget ? 'text-[#c54b2a] font-black' : 'text-slate-500'}`}>
                         {data.isTarget ? 'Target' : data.name}
                       </span>
                       <span className="text-xs font-black text-slate-700">{data.original}</span>
                     </div>
                     <div className="h-2.5 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
                       <div 
-                        className={`h-full transition-all duration-1000 ${data.isTarget ? 'bg-indigo-600' : 'bg-slate-300'}`}
+                        className={`h-full transition-all duration-1000 ${data.isTarget ? 'bg-[#c54b2a]' : 'bg-slate-300'}`}
                         style={{ width: `${Math.max(widthPercentage, 2)}%` }}
                       />
                     </div>

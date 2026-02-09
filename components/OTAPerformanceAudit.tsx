@@ -59,7 +59,7 @@ const OTACard: React.FC<{ item: OTAAuditItem }> = ({ item }) => {
     if (channelLower.includes('booking')) return { color: '#2563eb', theme: 'blue' };
     if (channelLower.includes('mmt') || channelLower.includes('makemytrip')) return { color: '#dc2626', theme: 'red' };
     if (channelLower.includes('google')) return { color: '#10b981', theme: 'emerald' };
-    return { color: '#4f46e5', theme: 'indigo' };
+    return { color: '#c54b2a', theme: 'orange' };
   };
 
   const theme = getChannelTheme();
@@ -167,8 +167,8 @@ const OTAPerformanceAudit: React.FC<Props> = ({ audit }) => {
 
       <div className="mt-8 flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
         <p className="text-[9px] font-bold text-slate-400 italic uppercase tracking-wider">Analysis: Normalized to global 10-point performance scale</p>
-        <div className="flex items-center gap-2 text-[10px] font-bold text-indigo-600 uppercase tracking-widest">
-          <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+        <div className="flex items-center gap-2 text-[10px] font-bold text-[#c54b2a] uppercase tracking-widest">
+          <span className="w-2 h-2 rounded-full bg-[#c54b2a] animate-pulse"></span>
           Synchronized Data Stream
         </div>
       </div>

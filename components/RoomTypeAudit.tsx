@@ -39,13 +39,13 @@ const RoomTypeAudit: React.FC<Props> = ({ rooms = [] }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 room-grid">
         {rooms.map((room, idx) => (
-          <div key={idx} className="bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-sm flex flex-col h-full group hover:shadow-md hover:border-indigo-600/30 transition-all break-inside-avoid room-card">
+          <div key={idx} className="bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-sm flex flex-col h-full group hover:shadow-md hover:border-[#c54b2a]/30 transition-all break-inside-avoid room-card">
             <div className="p-8 pb-4 flex-none">
               <div className="flex justify-between items-start mb-4 gap-4">
-                <h4 className="text-xl font-black text-slate-800 leading-tight group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[3rem]">
+                <h4 className="text-xl font-black text-slate-800 leading-tight group-hover:text-[#c54b2a] transition-colors line-clamp-2 min-h-[3rem]">
                   {room.name || 'Commercial Unit'}
                 </h4>
-                <div className="bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase whitespace-nowrap border border-indigo-100 flex-shrink-0 mt-1 shadow-sm">
+                <div className="bg-orange-50 text-[#c54b2a] px-2.5 py-1 rounded-lg text-[9px] font-black uppercase whitespace-nowrap border border-orange-100 flex-shrink-0 mt-1 shadow-sm">
                   Verified
                 </div>
               </div>
@@ -81,7 +81,7 @@ const RoomTypeAudit: React.FC<Props> = ({ rooms = [] }) => {
                   </div>
                 </div>
                 
-                <div className="no-print bg-slate-900 text-white p-3.5 rounded-2xl group-hover:bg-indigo-600 transition-all shadow-lg flex items-center justify-center">
+                <div className="no-print bg-slate-900 text-white p-3.5 rounded-2xl group-hover:bg-[#c54b2a] transition-all shadow-lg flex items-center justify-center">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                   </svg>
